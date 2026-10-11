@@ -28,6 +28,9 @@ jobs:
           if [ -f debug.keystore ]; then mkdir -p ~/.android && cp debug.keystore ~/.android/debug.keystore; fi
       - run: npm install
       - run: npx cap add android
+      - name: Pasang plugin native bila ada (notifikasi media + TTS bawaan)
+        run: |
+          if [ -f native/apply.sh ]; then bash native/apply.sh; fi
       - run: npx cap sync android
       - name: Build APK
         run: |
