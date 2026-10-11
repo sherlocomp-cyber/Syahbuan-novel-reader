@@ -26,7 +26,7 @@ public class MediaPlugin extends Plugin {
       ready = status == TextToSpeech.SUCCESS;
       if (ready) {
         tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
-          @Override public void onStart(String id) {}
+          @Override public void onStart(String id) { JSObject o = new JSObject(); o.put("id", id); notifyListeners("ttsStart", o); }
           @Override public void onDone(String id) { JSObject o = new JSObject(); o.put("id", id); notifyListeners("ttsDone", o); }
           @Override public void onError(String id) { JSObject o = new JSObject(); o.put("id", id); notifyListeners("ttsError", o); }
         });
@@ -43,12 +43,21 @@ public class MediaPlugin extends Plugin {
 
   @PluginMethod
   public void speak(PluginCall call) {
-    if (!ready) { call.reject("Mesin TTS perangkat belum siap"); return; }
+    if (!ready) { call.reject("Mesin suara HP belum siap atau tidak terpasang. Pasang Google Speech Services, atau pakai suara Edge."); return; }
     String text = call.getString("text", "");
     String lang = call.getString("lang", "");
     String id = call.getString("id", "u");
     float rate = call.getFloat("rate", 1.0f);
-    if (!lang.isEmpty()) tts.setLanguage(Locale.forLanguageTag(lang));
+    if (!lang.isEmpty()) {
+      int lr = tts.setLanguage(Locale.forLanguageTag(lang));
+      if (lr == TextToSpeech.LANG_MISSING_DATA || lr == TextToSpeech.LANG_NOT_SUPPORTED) {
+        int l2 = tts.setLanguage(Locale.getDefault());
+        if (l2 == TextToSpeech.LANG_MISSING_DATA || l2 == TextToSpeech.LANG_NOT_SUPPORTED) {
+          call.reject("Data bahasa " + lang + " belum terpasang di mesin suara HP.");
+          return;
+        }
+      }
+    }
     tts.setSpeechRate(rate);
     int r = tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, id);
     if (r == TextToSpeech.SUCCESS) call.resolve(); else call.reject("speak gagal");
