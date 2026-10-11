@@ -276,7 +276,7 @@ summary{min-height:44px;padding:10px 0}
     <button class="ib tbig" id="tplay" aria-label="Putar"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></button>
     <button class="ib" id="tnext" aria-label="Kalimat berikutnya"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
     <button class="ib" id="tstop" aria-label="Berhenti"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg></button>
-    <div class="tinfo"><b id="ttitle">Bab</b><small id="tpos">Siap · v5</small></div>
+    <div class="tinfo"><b id="ttitle">Bab</b><small id="tpos">Siap · v6</small></div>
     <button class="ib" id="tmore" aria-label="Pengaturan suara" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
   </div>
   <div class="tset" id="tset" hidden>
@@ -1089,7 +1089,7 @@ function loadVoices(){
 function ttsInfo(){
   const n = T.list.length, t = (T.sec && T.sec.dataset.title) || (curEl && curEl.dataset.title) || "Bab";
   $("ttitle").textContent = t;
-  $("tpos").textContent = (n ? (T.i + 1) + " / " + n + " kalimat" + (T.on ? "" : " · jeda") : "Siap · v5") + (T.msg ? " · " + T.msg : "");
+  $("tpos").textContent = (n ? (T.i + 1) + " / " + n + " kalimat" + (T.on ? "" : " · jeda") : "Siap · v6") + (T.msg ? " · " + T.msg : "");
   $("tprog").style.transform = "scaleX(" + (n ? Math.min(1, (T.i + 1) / n) : 0).toFixed(3) + ")";
 }
 if(!TTS_OK) $("btts").hidden = true;
@@ -1737,7 +1737,14 @@ addEventListener("dragover", e => e.preventDefault());
 addEventListener("drop", e => { e.preventDefault(); dg = 0; bkHide(); const f = e.dataTransfer && e.dataTransfer.files[0]; if(f) openBook(f); });
 
 const NATIVE = !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform());
-const NM = NATIVE ? Capacitor.registerPlugin("NovelMedia") : null;
+const NM = (() => {   // plugin native: Capacitor.Plugins (tanpa bundler), cadangan registerPlugin
+  if(!NATIVE) return null;
+  try{
+    if(Capacitor.Plugins && Capacitor.Plugins.NovelMedia) return Capacitor.Plugins.NovelMedia;
+    if(typeof Capacitor.registerPlugin === "function") return Capacitor.registerPlugin("NovelMedia");
+  }catch(e){}
+  return null;
+})();
 /* ===== Suara Microsoft Edge (online, lewat Cloudflare Worker pribadi) ===== */
 const EDGE_URL_DEFAULT = "https://edge-tts.sherlocomp.workers.dev";   // isi dengan URL Worker agar tidak perlu mengetik di aplikasi
 const EDGE = {au:new Audio(), c:new Map()};
