@@ -33,6 +33,9 @@ Masalah umum:
 - Suara tidak keluar di aplikasi: pastikan alamat Worker benar dan HP online. Aplikasi otomatis memakai suara perangkat bila Edge gagal.
 - Suara Edge adalah layanan tidak resmi dan bisa berubah sewaktu-waktu.
 
+## Bagian 3. TTS bawaan dan kontrol di notifikasi
+Folder `native/` berisi plugin Android (TTS bawaan perangkat + notifikasi pemutar dengan tombol Sebelumnya, Putar/Jeda, Berikutnya, Berhenti). Workflow memasangnya otomatis lewat `native/apply.sh`. Saat pertama kali TTS dimulai, izinkan notifikasi. Agar pembacaan tidak terhenti di latar belakang, matikan penghematan baterai untuk aplikasi ini.
+
 ## Pemecahan masalah
 - **Build merah:** buka run yang gagal, lihat langkah yang berwarna merah, lalu kirim tangkapan layarnya.
 - **Gagal pasang karena "paket bertentangan":** hapus aplikasi lama dulu (tanda tangan berbeda), lalu pasang lagi.

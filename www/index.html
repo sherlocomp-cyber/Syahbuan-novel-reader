@@ -996,7 +996,7 @@ function ttsMark(range){
   const r = range.getBoundingClientRect();
   if(r.top < 90 || r.bottom > innerHeight - 60 - document.querySelector(".dock").offsetHeight) window.scrollBy({top:r.top - innerHeight * 0.3, behavior:RM() ? "auto" : "smooth"});
 }
-function ttsUI(){ $("tplay").innerHTML = T.on ? ICON_PAUSE : ICON_PLAY; $("tplay").setAttribute("aria-label", T.on ? "Jeda" : "Putar"); ttsInfo(); }
+function ttsUI(){ $("tplay").innerHTML = T.on ? ICON_PAUSE : ICON_PLAY; $("tplay").setAttribute("aria-label", T.on ? "Jeda" : "Putar"); ttsInfo(); mediaSync(); }
 
 function say(){
   if(!T.on) return;
@@ -1006,6 +1006,7 @@ function say(){
   if(T.i >= T.list.length){ ttsEnd(); return; }
   const s = T.list[T.i];
   if(S.edgeOn && S.edgeUrl && !T.edgeOff){ edgeSay(s, ++T.tok); return; }
+  if(NM){ nativeSay(s, ++T.tok); return; }
   const u = new SpeechSynthesisUtterance(s.text), my = ++T.tok, v = pickVoice();
   if(v){ u.voice = v; u.lang = v.lang; } else if(!S.voiceSet) u.lang = "en-US";
   u.rate = S.rate; ttsMark(s.range); ttsInfo();
@@ -1020,7 +1021,7 @@ function say(){
 function ttsHalt(){ T.on = false; T.tok++; speechSynthesis.cancel(); ttsUI(); awake(AS.on); keepAlive(false); }
 function ttsPause(){ ttsHalt(); }
 function ttsStop(){
-  ttsHalt(); T.list = []; T.i = 0; T.sec = null; T.noVoice = false; T.retried = false; T.sleepAt = 0; T.sleepCh = false; $("tsleep").value = "0"; ttsInfo();
+  ttsHalt(); T.list = []; T.i = 0; T.sec = null; T.noVoice = false; T.retried = false; T.sleepAt = 0; T.sleepCh = false; $("tsleep").value = "0"; ttsInfo(); mediaSync();
   if(window.CSS && CSS.highlights) CSS.highlights.delete("tts");
   document.querySelectorAll(".tts-on").forEach(e => e.classList.remove("tts-on"));
 }
@@ -1731,10 +1732,12 @@ addEventListener("dragleave", () => { if(--dg <= 0){ dg = 0; bkHide(); } });
 addEventListener("dragover", e => e.preventDefault());
 addEventListener("drop", e => { e.preventDefault(); dg = 0; bkHide(); const f = e.dataTransfer && e.dataTransfer.files[0]; if(f) openBook(f); });
 
+const NATIVE = !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform());
+const NM = NATIVE ? Capacitor.registerPlugin("NovelMedia") : null;
 /* ===== Suara Microsoft Edge (online, lewat Cloudflare Worker pribadi) ===== */
-const EDGE_URL_DEFAULT = "";   // isi dengan URL Worker agar tidak perlu mengetik di aplikasi
+const EDGE_URL_DEFAULT = "https://edge-tts.sherlocomp.workers.dev";   // isi dengan URL Worker agar tidak perlu mengetik di aplikasi
 const EDGE = {au:new Audio(), c:new Map()};
-if(TTS_OK){ const c0 = speechSynthesis.cancel.bind(speechSynthesis); speechSynthesis.cancel = () => { c0(); EDGE.au.pause(); }; }
+if(TTS_OK){ const c0 = speechSynthesis.cancel.bind(speechSynthesis); speechSynthesis.cancel = () => { c0(); EDGE.au.pause(); if(NM) NM.stopSpeak().catch(() => {}); }; }
 function edgeGet(text){
   const k = S.edgeVoice + "|" + S.rate + "|" + text;
   if(!EDGE.c.has(k)){
@@ -1746,7 +1749,7 @@ function edgeGet(text){
   return EDGE.c.get(k);
 }
 function edgeSay(s, my){
-  ttsMark(s.range); ttsInfo();
+  ttsMark(s.range); ttsInfo(); mediaChk();
   const au = EDGE.au, nx = T.list[T.i + 1];
   const fail = () => { if(my !== T.tok || !T.on) return; T.edgeOff = true; toast("Suara Edge gagal, memakai suara perangkat."); say(); };
   edgeGet(s.text).then(u => {
@@ -1756,11 +1759,38 @@ function edgeSay(s, my){
   }).catch(fail);
   if(nx) edgeGet(nx.text).catch(() => {});   // siapkan kalimat berikutnya agar tanpa jeda
 }
-function edgeUI(){ $("tedge").hidden = !S.edgeOn; $("tdev").hidden = !!S.edgeOn; $("teng").value = S.edgeOn ? "edge" : "dev"; $("tev").value = S.edgeVoice; $("teu").value = S.edgeUrl; }
+function edgeUI(){ $("tedge").hidden = !S.edgeOn; $("tdev").hidden = !!S.edgeOn || !!NM; $("teng").value = S.edgeOn ? "edge" : "dev"; $("tev").value = S.edgeVoice; $("teu").value = S.edgeUrl; }
 S.edgeVoice = S.edgeVoice || "id-ID-ArdiNeural"; S.edgeUrl = S.edgeUrl || EDGE_URL_DEFAULT; edgeUI();
 $("teng").onchange = e => { S.edgeOn = e.target.value === "edge"; T.edgeOff = false; applySettings(); edgeUI(); if(S.edgeOn && !S.edgeUrl) toast("Isi URL Worker Edge TTS dulu."); };
 $("tev").onchange = e => { S.edgeVoice = e.target.value; applySettings(); };
 $("teu").onchange = e => { S.edgeUrl = e.target.value.trim(); T.edgeOff = false; applySettings(); };
+
+
+/* ===== Native Android: TTS bawaan perangkat + notifikasi pemutar ===== */
+let mediaOn = false, mediaT = "", askP = null;
+const detectLang = t => ((t.match(/\b(the|and|was|his|her|that|with|you|had)\b/gi) || []).length >= 2 ? "en-US" : "id-ID");
+async function mediaSync(){
+  if(!NM) return;
+  if(!T.on && !T.list.length){ if(mediaOn){ mediaOn = false; NM.hide().catch(() => {}); } return; }
+  const sec = T.sec, title = (sec && sec.dataset.title) || "Bab", nov = (sec && lib[novelKey(sec.dataset.url)]) || {};
+  mediaT = (sec && sec.dataset.title) || "";
+  if(!askP) askP = NM.ask().catch(() => {});
+  await askP;
+  if(!T.on && !T.list.length) return;
+  mediaOn = true; NM.show({title, text:nov.title || "Pembaca Novel", playing:T.on}).catch(() => {});
+}
+function mediaChk(){ if(NM && T.sec && (T.sec.dataset.title || "") !== mediaT) mediaSync(); }
+function nativeSay(s, my){
+  ttsMark(s.range); ttsInfo(); mediaChk();
+  NM.speak({text:s.text, lang:detectLang(s.text), rate:S.rate, id:String(my)}).catch(e => {
+    if(my === T.tok && T.on){ T.on = false; ttsUI(); toast("TTS perangkat gagal: " + ((e && e.message) || e)); }
+  });
+}
+if(NM){
+  NM.addListener("ttsDone", e => { if(+e.id === T.tok && T.on){ T.i++; say(); } });
+  NM.addListener("ttsError", e => { if(+e.id === T.tok && T.on){ T.on = false; ttsUI(); toast("Suara perangkat gagal. Coba mesin Edge di pengaturan suara."); } });
+  NM.addListener("mediaAction", e => { const f = {play:() => ttsPlay(), pause:ttsPause, next:() => ttsJump(1), prev:() => ttsJump(-1), stop:ttsStop}[e.action]; if(f) f(); });
+}
 
 /* ===== Init: lanjutkan bab terakhir (dari cache bila offline) ===== */
 const FMT = {fs:v => v + " px", lh:v => (v / 10).toFixed(1), ps:v => (v / 10).toFixed(1) + " em", w:v => v + " px", mg:v => v + " px", pre:v => v + " bab", delay:v => v + " dtk", goal:v => v + " mnt"};
