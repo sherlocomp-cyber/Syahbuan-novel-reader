@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
@@ -14,11 +15,13 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
 import java.util.Locale;
+import org.json.JSONObject;
 
 @CapacitorPlugin(name = "NovelMedia", permissions = { @Permission(strings = { Manifest.permission.POST_NOTIFICATIONS }, alias = "notif") })
 public class MediaPlugin extends Plugin {
   private TextToSpeech tts;
   private boolean ready = false;
+  private volatile String lastId = "";
 
   private int initStatus = -999;
   private boolean triedGoogle = false;
@@ -29,7 +32,7 @@ public class MediaPlugin extends Plugin {
       ready = status == TextToSpeech.SUCCESS;
       if (ready) {
         tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
-          @Override public void onStart(String id) { JSObject o = new JSObject(); o.put("id", id); notifyListeners("ttsStart", o); }
+          @Override public void onStart(String id) { lastId = id; JSObject o = new JSObject(); o.put("id", id); notifyListeners("ttsStart", o); }
           @Override public void onDone(String id) { JSObject o = new JSObject(); o.put("id", id); notifyListeners("ttsDone", o); }
           @Override public void onError(String id) { JSObject o = new JSObject(); o.put("id", id); notifyListeners("ttsError", o); }
         });
@@ -95,6 +98,47 @@ public class MediaPlugin extends Plugin {
     } catch (Exception e) {
       o.put("err", String.valueOf(e.getMessage()));
     }
+    call.resolve(o);
+  }
+
+  @PluginMethod
+  public void speakQueue(PluginCall call) {
+    if (!ready) { call.reject("Mesin suara HP belum siap (kode " + initStatus + "). Pasang atau aktifkan Google Speech Services di Pengaturan HP > Bahasa > Text-to-speech."); return; }
+    JSArray items = call.getArray("items");
+    if (items == null || items.length() == 0) { call.reject("Tidak ada teks"); return; }
+    String lang = call.getString("lang", "");
+    float rate = call.getFloat("rate", 1.0f);
+    boolean flush = call.getBoolean("flush", true);
+    if (!lang.isEmpty()) {
+      int lr = tts.setLanguage(Locale.forLanguageTag(lang));
+      if (lr == TextToSpeech.LANG_MISSING_DATA || lr == TextToSpeech.LANG_NOT_SUPPORTED) {
+        int l2 = tts.setLanguage(Locale.getDefault());
+        if (l2 == TextToSpeech.LANG_MISSING_DATA || l2 == TextToSpeech.LANG_NOT_SUPPORTED) {
+          call.reject("Data bahasa " + lang + " belum terpasang di mesin suara HP.");
+          return;
+        }
+      }
+    }
+    tts.setSpeechRate(rate);
+    try {
+      for (int i = 0; i < items.length(); i++) {
+        JSONObject it = items.getJSONObject(i);
+        String text = it.optString("text", "");
+        String id = it.optString("id", "u" + i);
+        int mode = (flush && i == 0) ? TextToSpeech.QUEUE_FLUSH : TextToSpeech.QUEUE_ADD;
+        if (tts.speak(text, mode, null, id) != TextToSpeech.SUCCESS) { call.reject("speak gagal"); return; }
+      }
+      call.resolve();
+    } catch (Exception e) {
+      call.reject(String.valueOf(e.getMessage()));
+    }
+  }
+
+  @PluginMethod
+  public void status(PluginCall call) {
+    JSObject o = new JSObject();
+    o.put("id", lastId);
+    o.put("speaking", tts != null && tts.isSpeaking());
     call.resolve(o);
   }
 

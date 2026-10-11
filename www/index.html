@@ -972,7 +972,7 @@ if(!("speechSynthesis" in window) && CAPN){
   window.speechSynthesis = {cancel(){}, speak(){}, pause(){}, resume(){}, getVoices(){ return []; }, speaking:false, pending:false, paused:false, onvoiceschanged:null};
 }
 const TTS_OK = "speechSynthesis" in window;
-const T = {on:false, list:[], i:0, tok:0, sec:null, adv:false};
+const T = {on:false, list:[], i:0, tok:0, sec:null, adv:false, q:null};
 const DL = []; function dlog(m){ DL.push(new Date().toTimeString().slice(3, 8) + " " + m); if(DL.length > 6) DL.shift(); const e = document.getElementById("tlog"); if(e){ e.textContent = DL.join("\n"); e.scrollTop = e.scrollHeight; } }
 const SENT = /[^.!?…。！？\n]+[.!?…。！？]*["”’')\]]*\s*/g;
 const ICON_PLAY = '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>', ICON_PAUSE = '<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>';
@@ -1811,21 +1811,47 @@ async function mediaSync(){
   mediaOn = true; NM.show({title, text:nov.title || "Pembaca Novel", playing:T.on}).catch(() => {});
 }
 function mediaChk(){ if(NM && T.sec && (T.sec.dataset.title || "") !== mediaT) mediaSync(); }
+/* Antrean native: ratusan kalimat dikirim sekaligus ke mesin suara HP, jadi bacaan terus jalan
+   walau JavaScript ditahan Android saat aplikasi di latar belakang. id = "token:indeks". */
+const Q_FIRST = 200, Q_MORE = 100;
+function qItems(a, b){ const out = []; for(let k = a; k < b; k++) out.push({id:T.tok + ":" + k, text:T.list[k].text}); return out; }
 function nativeSay(s, my){
   T.msg = "Perangkat memulai…"; ttsMark(s.range); ttsInfo(); mediaChk();
+  const a = T.i, b = Math.min(T.list.length, a + Q_FIRST);
+  T.q = {tok:my, end:b, over:false};
   clearTimeout(T.wd); T.wd = setTimeout(() => { if(my === T.tok && T.on && T.msg === "Perangkat memulai…") toast("Belum ada suara dari mesin HP. Cek volume media, atau pasang Google Speech Services."); }, 6000);
-  NM.speak({text:s.text, lang:detectLang(s.text), rate:S.rate, id:String(my)}).then(() => dlog("speak diterima mesin")).catch(e => {
+  const sample = T.list.slice(a, a + 5).map(x => x.text).join(" ");
+  NM.speakQueue({items:qItems(a, b), lang:detectLang(sample), rate:S.rate, flush:true}).then(() => dlog("antrean " + a + "-" + b + " diterima mesin")).catch(e => {
     dlog("speak GAGAL: " + ((e && e.message) || JSON.stringify(e)));
     if(my === T.tok && T.on){ T.on = false; T.msg = ""; ttsUI(); toast("TTS perangkat gagal: " + ((e && e.message) || e)); }
   });
 }
+const qParse = id => { const m = /^(\d+):(\d+)$/.exec(String(id)); return m ? {tok:+m[1], idx:+m[2]} : null; };
+function qAt(idx){   // kalimat idx mulai dibaca: sinkronkan penanda, isi ulang antrean bila hampir habis
+  if(!T.q || idx >= T.list.length) return;
+  T.i = idx; T.msg = "Perangkat"; ttsMark(T.list[idx].range); ttsInfo(); mediaChk();
+  if(T.q.end - idx <= Q_MORE && T.q.end < T.list.length){
+    const a = T.q.end, b = Math.min(T.list.length, a + Q_MORE); T.q.end = b;
+    NM.speakQueue({items:qItems(a, b), lang:"", rate:S.rate, flush:false}).catch(() => {});
+  }
+}
+function qFinished(){   // seluruh antrean habis: lanjut ke berikutnya (batch baru atau bab berikutnya)
+  if(!T.q || T.q.over) return; T.q.over = true; T.i = T.q.end; say();
+}
 dlog("native=" + NATIVE + " NM=" + !!NM);
 if(NM){
   NM.info && NM.info().then(r => dlog("info " + JSON.stringify(r))).catch(e => dlog("info gagal: " + ((e && e.message) || e)));
-  NM.addListener("ttsStart", e => { dlog("event ttsStart " + e.id); if(+e.id === T.tok){ T.msg = "Perangkat"; ttsInfo(); } });
-  NM.addListener("ttsDone", e => { dlog("event ttsDone " + e.id); if(+e.id === T.tok && T.on){ T.i++; say(); } });
-  NM.addListener("ttsError", e => { dlog("event ttsError " + e.id); if(+e.id === T.tok && T.on){ T.on = false; ttsUI(); toast("Suara perangkat gagal. Coba mesin Edge di pengaturan suara."); } });
+  NM.addListener("ttsStart", e => { const q = qParse(e.id); if(q && q.tok === T.tok && T.on) qAt(q.idx); });
+  NM.addListener("ttsDone", e => { const q = qParse(e.id); if(q && q.tok === T.tok && T.on && T.q && q.idx === T.q.end - 1) qFinished(); });
+  NM.addListener("ttsError", e => { const q = qParse(e.id); if(q && q.tok === T.tok && T.on){ T.on = false; ttsUI(); toast("Suara perangkat gagal. Coba lagi atau periksa mesin suara HP."); } });
   NM.addListener("mediaAction", e => { const f = {play:() => ttsPlay(), pause:ttsPause, next:() => ttsJump(1), prev:() => ttsJump(-1), stop:ttsStop}[e.action]; if(f) f(); });
+  /* Saat aplikasi kembali tampil: sinkronkan posisi dengan mesin (event bisa terlewat saat JS ditahan) */
+  const resync = () => { if(!T.on || !T.q) return; NM.status().then(r => {
+    const q = qParse(r.id); if(!q || q.tok !== T.tok) return;
+    qAt(q.idx); if(!r.speaking && q.idx >= T.q.end - 1) qFinished();
+  }).catch(() => {}); };
+  document.addEventListener("visibilitychange", () => { if(!document.hidden) resync(); });
+  setInterval(() => { if(T.on) resync(); }, 4000);
 }
 
 /* ===== Init: lanjutkan bab terakhir (dari cache bila offline) ===== */
