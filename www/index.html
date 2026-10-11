@@ -208,7 +208,7 @@ mark[data-n]{text-decoration:underline dotted;text-underline-offset:3px}
 .note{border-left-width:4px}
 /* ===== Tahap 6: mini player TTS ===== */
 .ttsbar{max-height:60vh;max-height:60dvh;overflow:auto}
-.ttsbar .ib{min-width:44px;min-height:44px;display:grid;place-items:center;touch-action:manipulation}
+.ttsbar .ib{touch-action:none!important;min-width:44px;min-height:44px;display:grid;place-items:center;touch-action:manipulation}
 .tprogw{height:3px;margin:0 0 6px;border-radius:2px;background:var(--line);overflow:hidden}
 .tprogw i{display:block;height:100%;background:var(--acc);transform:scaleX(0);transform-origin:left;transition:transform .2s}
 .tmain{gap:2px}
@@ -276,7 +276,7 @@ summary{min-height:44px;padding:10px 0}
     <button class="ib tbig" id="tplay" aria-label="Putar"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></button>
     <button class="ib" id="tnext" aria-label="Kalimat berikutnya"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
     <button class="ib" id="tstop" aria-label="Berhenti"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg></button>
-    <div class="tinfo"><b id="ttitle">Bab</b><small id="tpos">Siap · v8</small></div>
+    <div class="tinfo"><b id="ttitle">Bab</b><small id="tpos">Siap · v9</small></div>
     <button class="ib" id="tmore" aria-label="Pengaturan suara" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
   </div>
   <div id="tlog" style="font:11px/1.35 monospace;color:var(--mute);padding:2px 6px;max-height:84px;overflow:auto;user-select:text;white-space:pre-wrap"></div>
@@ -1093,7 +1093,7 @@ function loadVoices(){
 function ttsInfo(){
   const n = T.list.length, t = (T.sec && T.sec.dataset.title) || (curEl && curEl.dataset.title) || "Bab";
   $("ttitle").textContent = t;
-  $("tpos").textContent = (n ? (T.i + 1) + " / " + n + " kalimat" + (T.on ? "" : " · jeda") : "Siap · v8") + (T.msg ? " · " + T.msg : "");
+  $("tpos").textContent = (n ? (T.i + 1) + " / " + n + " kalimat" + (T.on ? "" : " · jeda") : "Siap · v9") + (T.msg ? " · " + T.msg : "");
   $("tprog").style.transform = "scaleX(" + (n ? Math.min(1, (T.i + 1) / n) : 0).toFixed(3) + ")";
 }
 if(!TTS_OK) $("btts").hidden = true;
@@ -1421,9 +1421,11 @@ document.addEventListener("visibilitychange", () => { wl = null; if(!document.hi
 addEventListener("error", e => { try{ toast("Galat: " + (e.message || "tidak dikenal")); }catch(_){} });
 /* Diagnostik sentuhan + cadangan: bila klik tombol pemutar tidak terpicu, pakai pointerup */
 document.addEventListener("pointerdown", e => { const t = e.target; dlog("sentuh: " + ((t.closest && t.closest("button") && t.closest("button").id) || t.id || (t.tagName + "." + String(t.className && t.className.baseVal !== undefined ? t.className.baseVal : t.className).slice(0, 20)))); }, true);
-["tplay", "tprev", "tnext", "tstop", "tmore"].forEach(id => { const b = $(id); if(!b) return; let up = 0; b._ck = 0;
-  b.addEventListener("click", () => { b._ck = Date.now(); }, true);
-  b.addEventListener("pointerup", () => { up = Date.now(); setTimeout(() => { if(b._ck < up){ dlog("klik tak terpicu, pakai pointerup: " + id); b._ck = Date.now(); if(b.onclick) b.onclick(); } }, 350); });
+/* Android sering membatalkan gestur (pointercancel) sehingga klik tak pernah terpicu: aktifkan tombol saat disentuh */
+["tplay", "tprev", "tnext", "tstop", "tmore"].forEach(id => { const b = $(id), f = b && b.onclick; if(!f) return; let last = 0;
+  const run = how => { const n = Date.now(); if(n - last < 450) return; last = n; dlog("tombol " + id + " (" + how + ")"); f.call(b); };
+  b.onclick = () => run("klik");
+  b.addEventListener("pointerdown", () => run("sentuh"));
 });
 /* Pemutar TTS selalu tampil di bawah layar */
 $("tts").classList.add("on");
