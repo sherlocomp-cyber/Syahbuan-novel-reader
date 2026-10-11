@@ -276,9 +276,10 @@ summary{min-height:44px;padding:10px 0}
     <button class="ib tbig" id="tplay" aria-label="Putar"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></button>
     <button class="ib" id="tnext" aria-label="Kalimat berikutnya"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
     <button class="ib" id="tstop" aria-label="Berhenti"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg></button>
-    <div class="tinfo"><b id="ttitle">Bab</b><small id="tpos">Siap · v6</small></div>
+    <div class="tinfo"><b id="ttitle">Bab</b><small id="tpos">Siap · v7</small></div>
     <button class="ib" id="tmore" aria-label="Pengaturan suara" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
   </div>
+  <div id="tlog" style="font:11px/1.35 monospace;color:var(--mute);padding:2px 6px;max-height:84px;overflow:auto;user-select:text;white-space:pre-wrap"></div>
   <div class="tset" id="tset" hidden>
     <div class="trow"><label>Kecepatan <input type="range" id="trate" min="5" max="20" aria-label="Kecepatan bicara"> <output id="trv"></output></label></div>
     <div class="trow"><label>Mesin suara <select id="teng"><option value="dev">Perangkat</option><option value="edge">Microsoft Edge (online)</option></select></label></div>
@@ -966,6 +967,7 @@ document.querySelectorAll(".sheet").forEach(sh => sh.addEventListener("click", e
 /* ===== Text-to-Speech (Web Speech API) ===== */
 const TTS_OK = "speechSynthesis" in window;
 const T = {on:false, list:[], i:0, tok:0, sec:null, adv:false};
+const DL = []; function dlog(m){ DL.push(new Date().toTimeString().slice(3, 8) + " " + m); if(DL.length > 6) DL.shift(); const e = document.getElementById("tlog"); if(e) e.textContent = DL.join("\n"); }
 const SENT = /[^.!?…。！？\n]+[.!?…。！？]*["”’')\]]*\s*/g;
 const ICON_PLAY = '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>', ICON_PAUSE = '<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>';
 
@@ -1006,8 +1008,9 @@ function say(){
   awake(true); keepAlive(true);
   if(T.i >= T.list.length){ ttsEnd(); return; }
   const s = T.list[T.i];
-  if(S.edgeOn && S.edgeUrl && !T.edgeOff){ edgeSay(s, ++T.tok); return; }
-  if(NM){ nativeSay(s, ++T.tok); return; }
+  if(S.edgeOn && S.edgeUrl && !T.edgeOff){ dlog("mesin: edge"); edgeSay(s, ++T.tok); return; }
+  if(NM){ dlog("mesin: perangkat (native)"); nativeSay(s, ++T.tok); return; }
+  dlog("mesin: speechSynthesis web");
   const u = new SpeechSynthesisUtterance(s.text), my = ++T.tok, v = pickVoice();
   if(v){ u.voice = v; u.lang = v.lang; } else if(!S.voiceSet) u.lang = "en-US";
   u.rate = S.rate; ttsMark(s.range); ttsInfo();
@@ -1031,6 +1034,7 @@ function ttsStart(){
   T.sec = curEl; T.list = sentencesOf(T.sec); T.i = 0;
   const k = T.list.findIndex(x => x.range.getBoundingClientRect().bottom > 90);  // mulai dari yang terlihat
   if(k > 0) T.i = k;
+  dlog("kalimat: " + T.list.length);
   if(!T.list.length){ toast("Tidak ada teks yang bisa dibaca di bab ini."); return; }
   T.noVoice = false; T.retried = false; T.edgeOff = false; $("asbar").classList.remove("on"); $("tts").classList.add("on");
   T.on = true; ttsUI(); say();
@@ -1089,7 +1093,7 @@ function loadVoices(){
 function ttsInfo(){
   const n = T.list.length, t = (T.sec && T.sec.dataset.title) || (curEl && curEl.dataset.title) || "Bab";
   $("ttitle").textContent = t;
-  $("tpos").textContent = (n ? (T.i + 1) + " / " + n + " kalimat" + (T.on ? "" : " · jeda") : "Siap · v6") + (T.msg ? " · " + T.msg : "");
+  $("tpos").textContent = (n ? (T.i + 1) + " / " + n + " kalimat" + (T.on ? "" : " · jeda") : "Siap · v7") + (T.msg ? " · " + T.msg : "");
   $("tprog").style.transform = "scaleX(" + (n ? Math.min(1, (T.i + 1) / n) : 0).toFixed(3) + ")";
 }
 if(!TTS_OK) $("btts").hidden = true;
@@ -1097,7 +1101,7 @@ else{
   $("btts").onclick = () => { $("tts").classList.add("on"); T.on ? ttsPause() : ttsPlay(); };
   $("tmore").onclick = () => { const s = $("tset"); s.hidden = !s.hidden; $("tmore").setAttribute("aria-expanded", String(!s.hidden)); };
   $("tsleep").onchange = e => { const v = e.target.value; T.sleepCh = v === "bab"; T.sleepAt = +v > 0 ? Date.now() + v * 60000 : 0; if(+v > 0) toast("TTS berhenti dalam " + v + " menit."); };
-  $("tplay").onclick = () => { try{ if(T.on) ttsPause(); else{ toast("Memulai…"); ttsPlay(); } }catch(e){ toast("Galat putar: " + (e && e.message || e)); } };
+  $("tplay").onclick = () => { dlog("klik putar (on=" + T.on + ")"); try{ if(T.on) ttsPause(); else{ toast("Memulai…"); ttsPlay(); } }catch(e){ toast("Galat putar: " + (e && e.message || e)); } };
   $("tstop").onclick = ttsStop;
   $("tprev").onclick = () => ttsJump(-1); $("tnext").onclick = () => ttsJump(1);
   $("trate").value = S.rate * 10; $("trv").textContent = S.rate.toFixed(1) + "x";
@@ -1796,14 +1800,17 @@ function mediaChk(){ if(NM && T.sec && (T.sec.dataset.title || "") !== mediaT) m
 function nativeSay(s, my){
   T.msg = "Perangkat memulai…"; ttsMark(s.range); ttsInfo(); mediaChk();
   clearTimeout(T.wd); T.wd = setTimeout(() => { if(my === T.tok && T.on && T.msg === "Perangkat memulai…") toast("Belum ada suara dari mesin HP. Cek volume media, atau pasang Google Speech Services."); }, 6000);
-  NM.speak({text:s.text, lang:detectLang(s.text), rate:S.rate, id:String(my)}).catch(e => {
+  NM.speak({text:s.text, lang:detectLang(s.text), rate:S.rate, id:String(my)}).then(() => dlog("speak diterima mesin")).catch(e => {
+    dlog("speak GAGAL: " + ((e && e.message) || JSON.stringify(e)));
     if(my === T.tok && T.on){ T.on = false; T.msg = ""; ttsUI(); toast("TTS perangkat gagal: " + ((e && e.message) || e)); }
   });
 }
+dlog("native=" + NATIVE + " NM=" + !!NM);
 if(NM){
-  NM.addListener("ttsStart", e => { if(+e.id === T.tok){ T.msg = "Perangkat"; ttsInfo(); } });
-  NM.addListener("ttsDone", e => { if(+e.id === T.tok && T.on){ T.i++; say(); } });
-  NM.addListener("ttsError", e => { if(+e.id === T.tok && T.on){ T.on = false; ttsUI(); toast("Suara perangkat gagal. Coba mesin Edge di pengaturan suara."); } });
+  NM.info && NM.info().then(r => dlog("info " + JSON.stringify(r))).catch(e => dlog("info gagal: " + ((e && e.message) || e)));
+  NM.addListener("ttsStart", e => { dlog("event ttsStart " + e.id); if(+e.id === T.tok){ T.msg = "Perangkat"; ttsInfo(); } });
+  NM.addListener("ttsDone", e => { dlog("event ttsDone " + e.id); if(+e.id === T.tok && T.on){ T.i++; say(); } });
+  NM.addListener("ttsError", e => { dlog("event ttsError " + e.id); if(+e.id === T.tok && T.on){ T.on = false; ttsUI(); toast("Suara perangkat gagal. Coba mesin Edge di pengaturan suara."); } });
   NM.addListener("mediaAction", e => { const f = {play:() => ttsPlay(), pause:ttsPause, next:() => ttsJump(1), prev:() => ttsJump(-1), stop:ttsStop}[e.action]; if(f) f(); });
 }
 

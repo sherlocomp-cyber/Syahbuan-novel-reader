@@ -77,6 +77,28 @@ public class MediaPlugin extends Plugin {
   }
 
   @PluginMethod
+  public void info(PluginCall call) {
+    JSObject o = new JSObject();
+    o.put("ready", ready);
+    o.put("status", initStatus);
+    try {
+      if (tts != null) {
+        o.put("engine", String.valueOf(tts.getDefaultEngine()));
+        StringBuilder sb = new StringBuilder();
+        for (TextToSpeech.EngineInfo e : tts.getEngines()) sb.append(e.name).append(",");
+        o.put("engines", sb.toString());
+        if (ready) {
+          o.put("en", tts.isLanguageAvailable(Locale.US));
+          o.put("id", tts.isLanguageAvailable(new Locale("id", "ID")));
+        }
+      }
+    } catch (Exception e) {
+      o.put("err", String.valueOf(e.getMessage()));
+    }
+    call.resolve(o);
+  }
+
+  @PluginMethod
   public void stopSpeak(PluginCall call) {
     if (tts != null) tts.stop();
     call.resolve();
