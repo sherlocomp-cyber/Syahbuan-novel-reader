@@ -125,6 +125,7 @@ mark[data-c="3"]{background:#ffa6c999}mark[data-c="4"]{background:#ffb87a99}
 .tts-on{background:color-mix(in srgb,var(--acc) 25%,transparent)}
 .dock{position:fixed;left:0;right:0;bottom:0;z-index:12;display:none;background:var(--bg);padding-bottom:env(safe-area-inset-bottom,0px)}
 .dock:has(.ttsbar.on){display:block}
+.dock.on{display:block}
 .ttsbar{display:none;border-top:1px solid var(--line);padding:8px 12px;font:14px system-ui,sans-serif}
 .ttsbar.on{display:block}
 .trow{display:flex;align-items:center;gap:6px;margin:2px 0}
@@ -218,6 +219,7 @@ mark[data-n]{text-decoration:underline dotted;text-underline-offset:3px}
 .tset[hidden]{display:none}
 .tset .trow{min-height:44px}.tset select{min-height:44px}
 body:has(.ttsbar.on) .fabs{bottom:calc(var(--dockh,0px) + 16px)}
+body.dock-on .fabs{bottom:calc(var(--dockh,0px) + 16px)}
 /* ===== Tahap E: Edge Android ===== */
 :root{color-scheme:light}
 :root[data-theme=gelap],:root[data-theme=amoled]{color-scheme:dark}
@@ -1410,6 +1412,10 @@ $("bhome").onclick = () => $("home").classList.contains("on") && chs.length ? hi
 
 /* Wake lock hilang saat tab tersembunyi: ambil lagi; tinggi dock untuk posisi tombol mengambang */
 document.addEventListener("visibilitychange", () => { wl = null; if(!document.hidden && (T.on || AS.on)) awake(true); });
+/* Cadangan untuk WebView tanpa :has(): tampilkan dock lewat kelas */
+(() => { const dk = document.querySelector(".dock"), bars = document.querySelectorAll(".ttsbar");
+  const sync = () => { const on = [...bars].some(b => b.classList.contains("on")); dk.classList.toggle("on", on); document.body.classList.toggle("dock-on", on); };
+  if(window.MutationObserver) bars.forEach(b => new MutationObserver(sync).observe(b, {attributes:true, attributeFilter:["class"]})); sync(); })();
 if(window.ResizeObserver){ const dk = document.querySelector(".dock"); new ResizeObserver(() => document.documentElement.style.setProperty("--dockh", dk.offsetHeight + "px")).observe(dk); }
 /* ===== Tahap E: Edge Android ===== */
 /* Tombol Back menutup panel: tiap panel terbuka = satu entri riwayat; kedalaman dicocokkan di popstate */
