@@ -277,10 +277,10 @@ summary{min-height:44px;padding:10px 0}
     <button class="ib tbig" id="tplay" aria-label="Putar"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></button>
     <button class="ib" id="tnext" aria-label="Kalimat berikutnya"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
     <button class="ib" id="tstop" aria-label="Berhenti"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg></button>
-    <div class="tinfo"><b id="ttitle">Bab</b><small id="tpos">Siap · v10</small></div>
+    <div class="tinfo"><b id="ttitle">Bab</b><small id="tpos">Siap</small></div>
     <button class="ib" id="tmore" aria-label="Pengaturan suara" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
   </div>
-  <div id="tlog" style="font:11px/1.35 monospace;color:var(--mute);padding:2px 6px;max-height:84px;overflow:auto;user-select:text;white-space:pre-wrap"></div>
+  <div id="tlog" hidden style="font:11px/1.35 monospace;color:var(--mute);padding:2px 6px;max-height:84px;overflow:auto;user-select:text;white-space:pre-wrap"></div>
   <div class="tset" id="tset" hidden>
     <div class="trow"><label>Kecepatan <input type="range" id="trate" min="5" max="20" aria-label="Kecepatan bicara"> <output id="trv"></output></label></div>
     <div class="trow"><label>Mesin suara <select id="teng"><option value="dev">Perangkat</option><option value="edge">Microsoft Edge (online)</option></select></label></div>
@@ -1099,7 +1099,7 @@ function loadVoices(){
 function ttsInfo(){
   const n = T.list.length, t = (T.sec && T.sec.dataset.title) || (curEl && curEl.dataset.title) || "Bab";
   $("ttitle").textContent = t;
-  $("tpos").textContent = (n ? (T.i + 1) + " / " + n + " kalimat" + (T.on ? "" : " · jeda") : "Siap · v10") + (T.msg ? " · " + T.msg : "");
+  $("tpos").textContent = (n ? (T.i + 1) + " / " + n + " kalimat" + (T.on ? "" : " · jeda") : "Siap") + (T.msg ? " · " + T.msg : "");
   $("tprog").style.transform = "scaleX(" + (n ? Math.min(1, (T.i + 1) / n) : 0).toFixed(3) + ")";
 }
 if(!TTS_OK) $("btts").hidden = true;
