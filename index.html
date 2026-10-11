@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#fbfaf8">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Novel">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Pembaca Novel</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ibm-plex/6.4.0/css/ibm-plex.min.css" media="print" onload="this.media='all'">
+<style>
+/* ===== Tema (CSS variables) ===== */
+:root{--bg:#fbfaf8;--fg:#24211d;--mute:#6f695f;--line:#e6e2da;--acc:#2f5d62;--card:#fff}
+[data-theme=gelap]{--bg:#1c1d1f;--fg:#d8d6d1;--mute:#8b8a86;--line:#2e3033;--acc:#7fb5b0;--card:#26282a}
+[data-theme=sepia]{--bg:#f3e8d2;--fg:#4a3a26;--mute:#76623f;--line:#e0d0b0;--acc:#8a5a2b;--card:#f9f0de}
+[data-theme=amoled]{--bg:#000;--fg:#c9c7c2;--mute:#77756f;--line:#1c1c1c;--acc:#7fb5b0;--card:#0c0c0c}
+[data-theme=kertas]{--bg:#ececea;--fg:#2b2b2b;--mute:#7d7d7a;--line:#d6d6d2;--acc:#3a4f7a;--card:#f6f6f4}
+@media(prefers-color-scheme:dark){:root[data-theme=otomatis]{--bg:#1c1d1f;--fg:#d8d6d1;--mute:#8b8a86;--line:#2e3033;--acc:#7fb5b0;--card:#26282a}}
+/* ===== Design tokens & komponen (Tahap D) ===== */
+:root{--ui:"IBM Plex Sans",system-ui,sans-serif;--pg:#eef0fb;--cd:#fff;--cb:#dfe3f5;--cy:#14b8c4;--bl:#3d5afe;--tx:#1b2540;--mt:#5d6a8c;--on:#04202c;--r:20px;--d:.18s;--sh:0 1px 2px #1b25400f,0 10px 28px #1b254014;--gl:0 0 0 #0000}
+[data-theme=gelap],[data-theme=amoled]{--pg:linear-gradient(#061427,#0a2142);--cd:#0d2547;--cb:#17406e;--cy:#22d3d0;--bl:#4f7cff;--tx:#e6f1ff;--mt:#7f9bbd;--sh:0 1px 2px #0006,0 12px 30px #0007;--gl:0 0 28px #22d3d033}
+[data-theme=amoled]{--pg:#000;--cd:#08182e}
+@media(prefers-color-scheme:dark){:root[data-theme=otomatis]{--pg:linear-gradient(#061427,#0a2142);--cd:#0d2547;--cb:#17406e;--cy:#22d3d0;--bl:#4f7cff;--tx:#e6f1ff;--mt:#7f9bbd;--sh:0 1px 2px #0006,0 12px 30px #0007;--gl:0 0 28px #22d3d033}}
+[data-theme=kertas]{--pg:#8c9bb8;--cd:#f4f7fc;--cb:#d3daea;--cy:#0e9aa7;--bl:#3d5afe;--tx:#1b2540;--mt:#55658a}
+[data-theme=sepia]{--pg:#e9dcbd;--cd:#f9f0de;--cb:#e0d0b0;--cy:#1f8f8a;--bl:#b5702f;--tx:#4a3a26;--mt:#76623f}
+.card{background:var(--cd);color:var(--tx);border:1px solid var(--cb);border-radius:var(--r);box-shadow:var(--sh);padding:16px;font-family:var(--ui)}
+.card h3{margin:0 0 10px;font:600 15px/1.3 var(--ui)}
+.card>small{display:block;color:var(--mt)}
+.card-hero{background:linear-gradient(135deg,#0a2a5e,#2a52c9);border-color:#2a52c9;color:#fff;box-shadow:var(--sh),var(--gl)}
+.card-hero .lbl,.card-hero small{color:#dbe7ff}
+.lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mt)}
+.big{font:700 28px/1.15 var(--ui)}.big small{font:500 12px var(--ui);color:var(--mt)}
+.pill{min-height:44px;padding:0 16px;border:1px solid var(--cb);border-radius:999px;color:var(--tx);transition:background var(--d)}
+.pill.on{background:var(--cy);border-color:var(--cy);color:var(--on)}
+.seg{display:inline-flex;padding:3px;border:1px solid var(--cb);border-radius:999px}
+.seg button{min-height:38px;padding:0 14px;border-radius:999px;color:var(--tx)}
+.seg .on{background:var(--cy);color:var(--on)}
+.switch{position:relative;display:inline-block;width:48px;height:28px;flex:none}
+.switch input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.switch i{position:absolute;inset:0;border-radius:99px;background:var(--cb);transition:background var(--d);pointer-events:none}
+.switch i::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform var(--d)}
+.switch input:checked+i{background:var(--cy)}.switch input:checked+i::after{transform:translateX(20px)}
+.btn{min-height:44px;padding:0 18px;border-radius:14px;font:600 14px var(--ui);touch-action:manipulation}
+.btn-p{background:var(--cy);color:var(--on)}.btn-s{border:1px solid var(--cb);color:var(--tx)}.btn-g{color:var(--cy)}
+.btn:disabled{opacity:.5}
+.chip{display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:999px;background:color-mix(in srgb,var(--cy) 16%,transparent);color:var(--tx);font-size:12px}
+.field{width:100%;min-height:44px;padding:0 14px;border:1px solid var(--cb);border-radius:14px;background:color-mix(in srgb,var(--cd) 94%,var(--cy));color:var(--tx);font-family:var(--ui)}
+.pbar{height:10px;border-radius:99px;background:var(--cb);overflow:hidden}
+.pbar>i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--bl),var(--cy));animation:grow .6s ease-out}
+@keyframes grow{from{width:0}}
+.ring{width:76px;height:76px}.ring .v{animation:fill .8s ease-out}
+@keyframes fill{from{stroke-dasharray:0 94.2}}
+.spark{width:100%;height:44px}.spark path{vector-effect:non-scaling-stroke;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:40;max-width:90%;padding:12px 18px;border-radius:14px;background:var(--cd);color:var(--tx);border:1px solid var(--cb);box-shadow:var(--sh);font:14px var(--ui);opacity:0;pointer-events:none;transform:translate(-50%,16px);transition:opacity var(--d),transform var(--d)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+/* Beranda */
+#home{position:fixed;inset:0;z-index:9;display:none;overflow:auto;background:var(--pg);color:var(--tx);font-family:var(--ui);padding:calc(72px + env(safe-area-inset-top,0px)) 16px calc(32px + env(safe-area-inset-bottom,0px))}
+#home.on{display:block}
+.hgrid{display:grid;gap:14px;max-width:960px;margin:0 auto}
+@media(min-width:768px){.hgrid{grid-template-columns:1fr 1fr}.hgrid .wide{grid-column:1/-1}}
+#home h2{margin:4px 0 2px;font:700 20px/1.25 var(--ui)}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0}.hrow>div:first-child{min-width:0}.hrow small{display:block}
+.ringw{flex:none}.spk{margin:6px 0 2px;color:#5eead4}
+.card-hero .btn{width:100%;margin-top:12px}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.lrow{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:8px 0;text-align:left;color:var(--tx)}
+.lrow>div:last-child{flex:1;min-width:0}.lrow b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lrow small{font-size:12px;color:var(--mt)}.lrow .pbar{height:6px;margin-top:6px}
+.mc{flex:none;width:40px;height:52px;border-radius:8px}
+.paste{display:flex;gap:8px;flex-wrap:wrap}.paste .field{flex:1 1 100%}.paste .btn{flex:1}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{height:100%}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--fg);font:16px/1.5 var(--ui);
+ padding:env(safe-area-inset-top,0) env(safe-area-inset-right,0) env(safe-area-inset-bottom,0) env(safe-area-inset-left,0);
+ transition:background .2s,color .2s}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ===== Toolbar ===== */
+.bar{position:fixed;left:0;right:0;z-index:10;display:flex;align-items:center;gap:6px;padding:8px 12px;
+ background:var(--bg);border-bottom:1px solid var(--line);top:env(safe-area-inset-top,0);transition:transform .2s}
+.bar.hide{transform:translateY(-120%)}
+.bar input{flex:1;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.bar .go{padding:9px 14px;border-radius:10px;background:var(--acc);color:var(--bg);font-weight:600}
+.ib{padding:8px;border-radius:10px;color:var(--mute)}
+.ib:hover{color:var(--fg)}
+
+/* ===== Area baca ===== */
+main{margin:0 auto;padding:84px var(--mg,20px) 120px;max-width:calc(var(--w,680px) + 2*var(--mg,20px))}
+article{font-family:var(--ff,Georgia,serif);font-size:var(--fs,19px);line-height:var(--lh,1.75);text-align:var(--ta,left)}
+article h1{font-size:1.5em;line-height:1.25;margin:0 0 1.2em}
+article p{margin:0 0 var(--ps,1em)}
+article img{max-width:100%;height:auto}
+.nav{display:flex;gap:10px;margin-top:40px}
+.nav button{flex:1;padding:12px;border:1px solid var(--line);border-radius:10px}
+.nav button:disabled{opacity:.4}
+
+/* ===== Library, highlight, menu mengambang ===== */
+mark{color:inherit;border-radius:3px;cursor:pointer}
+mark[data-c="0"]{background:#ffe86b99}mark[data-c="1"]{background:#8fe3a099}mark[data-c="2"]{background:#8ec5ff99}
+mark[data-c="3"]{background:#ffa6c999}mark[data-c="4"]{background:#ffb87a99}
+.fm{position:fixed;z-index:15;display:none;gap:4px;padding:6px;border-radius:12px;background:var(--card);border:1px solid var(--line);box-shadow:0 6px 24px #0003;font-size:13px}
+.fm.on{display:flex}
+.fm button{padding:4px 8px;border-radius:8px}
+.fm .dot{width:22px;height:22px;padding:0;border-radius:50%;border:1px solid var(--line)}
+.lcard{display:grid;grid-template-columns:64px 1fr;gap:12px;margin:12px 0;font-family:system-ui,sans-serif}
+.cover{height:92px;border-radius:6px;color:#fff;font:600 11px/1.2 Georgia,serif;padding:6px;overflow:hidden;word-break:break-word}
+.lcard h4{margin:0 0 2px;font-size:15px}.lcard small{color:var(--mute);display:block}
+.acts{display:flex;gap:2px;flex-wrap:wrap;margin-top:6px}
+.acts button{padding:5px 9px;border:1px solid var(--line);border-radius:8px;font-size:12px}
+.acts .pri{background:var(--acc);color:var(--bg);border-color:var(--acc)}
+.tools{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tools input,.tools select{padding:7px;border:1px solid var(--line);border-radius:8px;background:var(--card);flex:1;min-width:100px}
+.note{border-left:3px solid var(--acc);padding:2px 10px;margin:12px 0;font-size:14px}
+/* ===== Text-to-Speech ===== */
+::highlight(tts){background:color-mix(in srgb,var(--acc) 40%,transparent)}
+.tts-on{background:color-mix(in srgb,var(--acc) 25%,transparent)}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:12;display:none;background:var(--bg);padding-bottom:env(safe-area-inset-bottom,0px)}
+.dock:has(.ttsbar.on){display:block}
+.ttsbar{display:none;border-top:1px solid var(--line);padding:8px 12px;font:14px system-ui,sans-serif}
+.ttsbar.on{display:block}
+.trow{display:flex;align-items:center;gap:6px;margin:2px 0}
+.trow label{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+.trow input[type=range]{flex:1;min-width:0;accent-color:var(--acc)}
+.trow select{flex:1;min-width:0;padding:7px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+/* ===== Bab berurutan ===== */
+.ch+.ch{border-top:1px solid var(--line);margin-top:3.5em;padding-top:2.5em}
+.ch.gone{overflow:hidden}
+/* ===== Kosong, skeleton, galat ===== */
+.empty{text-align:center;padding:12vh 0;padding:12svh 0;color:var(--mute);font-family:system-ui,sans-serif}
+.empty h2{color:var(--fg);margin:0 0 8px}
+.sk div{height:14px;margin:14px 0;border-radius:6px;background:var(--line);animation:p 1.2s ease-in-out infinite}
+@keyframes p{50%{opacity:.4}}
+.err{padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-family:system-ui,sans-serif}
+.err textarea{width:100%;height:140px;margin:10px 0;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+
+/* ===== Panel pengaturan ===== */
+.sheet{position:fixed;inset:0;z-index:20;display:none;background:rgba(0,0,0,.4)}
+.sheet.on{display:block}
+.panel{position:absolute;left:0;right:0;bottom:0;max-height:85%;overflow:auto;background:var(--bg);border-radius:18px 18px 0 0;
+ padding:18px 18px calc(18px + env(safe-area-inset-bottom,0));animation:up .2s ease-out;max-width:560px;margin:0 auto}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
+.panel h3{margin:0 0 14px;display:flex;justify-content:space-between;align-items:center}
+.row{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:center;margin:12px 0;font-size:14px}
+.row select,.row textarea,.row input[type=text]{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.row input[type=range]{width:100%;accent-color:var(--acc)}
+.themes{display:flex;gap:8px;flex-wrap:wrap}
+.themes button{padding:6px 12px;border:1px solid var(--line);border-radius:999px;font-size:13px}
+.themes button.on{background:var(--acc);color:var(--bg);border-color:var(--acc)}
+.pnav{display:flex;gap:8px;overflow-x:auto;max-width:960px;margin:0 auto 14px;padding:2px 0;scrollbar-width:none}
+.pnav .pill{flex:none;font:600 14px var(--ui)}
+.panel{background:var(--cd);color:var(--tx);border-top:1px solid var(--cb);border-radius:22px 22px 0 0;font-family:var(--ui)}
+.panel .ib{min-width:44px;min-height:44px}
+.lcard{padding:12px;background:color-mix(in srgb,var(--cd) 94%,var(--cy));border:1px solid var(--cb);border-radius:var(--r);box-shadow:var(--sh)}
+.acts button{min-height:44px;padding:0 12px}
+.grp{margin:20px 0 2px;font:600 12px var(--ui);color:var(--mt)}
+.row{grid-template-columns:minmax(96px,38%) 1fr}
+.row .switch{justify-self:start}
+.tools .seg{flex:none}.seg button{min-height:44px}
+.bars rect{transform-origin:bottom;transform-box:fill-box;animation:rise .5s ease-out}
+@keyframes rise{from{transform:scaleY(0)}}
+.chart{width:100%;height:auto;margin-top:8px;color:var(--mt)}.chart text{font:10px var(--ui)}
+.bar{flex-wrap:wrap;justify-content:space-between;gap:2px;padding:8px 6px}
+.bar .ib{min-width:44px;min-height:44px;display:grid;place-items:center;touch-action:manipulation}
+.urlrow{display:none;order:9;flex:1 1 100%;gap:6px;padding:4px 6px 2px}
+.bar.url .urlrow{display:flex}
+.bar .go,.bar input{min-height:44px}
+main{padding-top:76px}
+#prog{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);height:3px;z-index:11;background:var(--acc);transform:scaleX(0);transform-origin:left;pointer-events:none}
+.fabs{position:fixed;right:12px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:11;display:none;flex-direction:column;gap:8px}
+.fabs.on{display:flex}
+body:has(.ttsbar.on) .fabs{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+.fabs button{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--card);color:var(--fg);border:1px solid var(--line);box-shadow:0 4px 14px #0003;touch-action:manipulation}
+.crow{display:block;width:100%;min-height:44px;padding:10px 4px;text-align:left;border-bottom:1px solid var(--line);font-size:14px}
+.crow.cur{color:var(--acc);font-weight:600}
+.rng{display:flex;align-items:center;gap:8px;min-width:0}
+.rng input{flex:1;min-width:0}
+.rng output{flex:none;min-width:52px;text-align:right;font:12px var(--ui);color:var(--mt)}
+.row input[type=range]{min-height:44px}
+.row.stack{grid-template-columns:1fr;gap:6px}
+.hint{grid-column:1/-1;margin:-6px 0 0;color:var(--mt);font-size:12px}
+#rst{width:100%;margin-top:6px}
+.toast.act{pointer-events:auto;display:flex;align-items:center;gap:8px}
+.sheet .empty{padding:32px 0}.sheet .empty .btn{margin-top:12px}
+.lcard .field{margin:4px 0}
+.steps{margin:0;padding-left:20px;font-size:14px;line-height:1.7}
+/* ===== Tahap 5: menu seleksi & catatan ===== */
+.fm{flex-direction:column;gap:2px;max-width:min(360px,calc(100vw - 16px))}
+.fmr{display:flex;gap:2px}
+.fm button{padding:0 8px;min-height:44px;flex:1;font-size:13px}
+.dot,.fm .dot{position:relative;flex:none;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:transparent}
+.dot::after{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--dc);border:1px solid var(--line)}
+.dot.sel::after{outline:2px solid var(--acc);outline-offset:2px}
+mark[data-n]{text-decoration:underline dotted;text-underline-offset:3px}
+.hcols{display:flex;gap:4px;margin:8px 0}
+#hnote{display:block;height:auto;min-height:96px;padding:10px 14px;margin:8px 0;resize:vertical}
+.hq{margin:0;padding:2px 10px;border-left:3px solid var(--cy);color:var(--mt);font-size:13px}
+.note{border-left-width:4px}
+/* ===== Tahap 6: mini player TTS ===== */
+.ttsbar{max-height:60vh;max-height:60dvh;overflow:auto}
+.ttsbar .ib{min-width:44px;min-height:44px;display:grid;place-items:center;touch-action:manipulation}
+.tprogw{height:3px;margin:0 0 6px;border-radius:2px;background:var(--line);overflow:hidden}
+.tprogw i{display:block;height:100%;background:var(--acc);transform:scaleX(0);transform-origin:left;transition:transform .2s}
+.tmain{gap:2px}
+.ib.tbig{width:48px;height:48px;border-radius:50%;background:var(--acc);color:var(--bg)}
+.tinfo{flex:1;min-width:0;padding:0 6px}
+.tinfo b{display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tinfo small{color:var(--mute);font-size:12px}
+.tset{margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
+.tset[hidden]{display:none}
+.tset .trow{min-height:44px}.tset select{min-height:44px}
+body:has(.ttsbar.on) .fabs{bottom:calc(var(--dockh,0px) + 16px)}
+/* ===== Tahap E: Edge Android ===== */
+:root{color-scheme:light}
+:root[data-theme=gelap],:root[data-theme=amoled]{color-scheme:dark}
+@media(prefers-color-scheme:dark){:root[data-theme=otomatis]{color-scheme:dark}}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{overscroll-behavior-y:contain}
+.panel,#home,.ttsbar,.sheet{overscroll-behavior:contain}
+article{overflow-wrap:break-word}
+#impbox{margin:8px 0}#impbox p{margin:0 0 8px;font-size:14px}
+/* ===== Tahap 8: aksesibilitas ===== */
+:root{--lk:#0b6f78}
+[data-theme=gelap],[data-theme=amoled]{--lk:#22d3d0;--ma:32%}
+@media(prefers-color-scheme:dark){:root[data-theme=otomatis]{--lk:#22d3d0;--ma:32%}}
+[data-theme=sepia]{--lk:#14605c;--cy:#2ba7a1}
+[data-theme=kertas]{--lk:#0a6672;--mute:#5f5f5c}
+[data-theme=amoled]{--mute:#8a8882}
+.btn-g{color:var(--lk)}
+mark[data-c="0"]{--m:#ffe86b}mark[data-c="1"]{--m:#8fe3a0}mark[data-c="2"]{--m:#8ec5ff}mark[data-c="3"]{--m:#ffa6c9}mark[data-c="4"]{--m:#ffb87a}
+mark[data-c]{background:color-mix(in srgb,var(--m) var(--ma,60%),transparent)}
+.themes button{min-height:44px;padding:0 14px}
+.tools input,.tools select,.tools button,.nav button,#wkc,#mbtn{min-height:44px}
+summary{min-height:44px;padding:10px 0}
+.trow input[type=range]{min-height:44px}
+.switch input{inset:-8px;width:calc(100% + 16px);height:calc(100% + 16px)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="bar" id="bar">
+    <button class="ib" id="burl" aria-label="Tempel URL bab"><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
+  <button class="ib" id="bhome" aria-label="Beranda"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg></button>
+  <button class="ib" id="bauto" aria-label="Auto-scroll"><svg viewBox="0 0 24 24"><path d="M12 4v13M6 12l6 6 6-6"/></svg></button>
+  <button class="ib" id="btts" aria-label="Text-to-Speech"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg></button>
+  <button class="ib" id="blib" aria-label="Library"><svg viewBox="0 0 24 24"><path d="M4 19V5a1 1 0 0 1 1-1h3v16H5a1 1 0 0 1-1-1zM8 4h4v16H8zM13.5 5.5l3.8-1 3 14.5-3.8 1z"/></svg></button>
+  <button class="ib" id="bnote" aria-label="Catatan dan bookmark"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg></button>
+  <button class="ib" id="cfg" aria-label="Pengaturan"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+<div class="urlrow"><input id="url" type="url" inputmode="url" placeholder="Tempel URL bab di sini" aria-label="URL bab"><button class="go" id="read">Baca</button></div>
+</header>
+<div id="prog" aria-hidden="true"></div>
+<div class="fabs" id="fabs"><button id="bcl" aria-label="Daftar bab"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button><button id="btop" aria-label="Kembali ke atas"><svg viewBox="0 0 24 24"><path d="M12 19V6M6 12l6-6 6 6"/></svg></button></div>
+<div class="sheet" id="csheet"><div class="panel"><h3>Daftar bab <button class="ib" data-close aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></h3><div id="clist"></div></div></div>
+
+<main id="main">
+  <article id="doc">
+    <div class="empty"><h2>Belum ada bab</h2><p>Tempel URL bab novel di atas, lalu tekan Baca.<br>Ketuk tengah layar untuk menampilkan atau menyembunyikan bilah atas.</p></div>
+  </article>
+</main>
+
+<div class="dock"><div class="ttsbar" id="tts">
+  <div class="tprogw" aria-hidden="true"><i id="tprog"></i></div>
+  <div class="trow tmain">
+    <button class="ib" id="tprev" aria-label="Kalimat sebelumnya"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button class="ib tbig" id="tplay" aria-label="Putar"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></button>
+    <button class="ib" id="tnext" aria-label="Kalimat berikutnya"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    <button class="ib" id="tstop" aria-label="Berhenti"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg></button>
+    <div class="tinfo"><b id="ttitle">Bab</b><small id="tpos">Siap</small></div>
+    <button class="ib" id="tmore" aria-label="Pengaturan suara" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
+  </div>
+  <div class="tset" id="tset" hidden>
+    <div class="trow"><label>Kecepatan <input type="range" id="trate" min="5" max="20" aria-label="Kecepatan bicara"> <output id="trv"></output></label></div>
+    <div class="trow"><label>Mesin suara <select id="teng"><option value="dev">Perangkat</option><option value="edge">Microsoft Edge (online)</option></select></label></div>
+    <div class="trow" id="tedge" hidden><select id="tev" aria-label="Suara Edge"><option value="id-ID-ArdiNeural">Ardi (Indonesia, pria)</option><option value="id-ID-GadisNeural">Gadis (Indonesia, wanita)</option><option value="en-US-AriaNeural">Aria (English US)</option><option value="en-US-GuyNeural">Guy (English US)</option><option value="en-GB-SoniaNeural">Sonia (English UK)</option><option value="ms-MY-YasminNeural">Yasmin (Melayu)</option><option value="ja-JP-NanamiNeural">Nanami (Jepang)</option><option value="zh-CN-XiaoxiaoNeural">Xiaoxiao (Mandarin)</option></select><input type="url" id="teu" placeholder="URL Worker Edge TTS" aria-label="URL Worker Edge TTS"></div>
+    <div class="trow" id="tdev"><select id="tvoice" aria-label="Suara"></select></div>
+    <small id="tvhint" class="hint" style="margin:0 0 4px"></small>
+    <div class="trow"><label>Timer tidur <select id="tsleep" aria-label="Timer tidur"><option value="0">Mati</option><option value="15">15 menit</option><option value="30">30 menit</option><option value="60">60 menit</option><option value="bab">Akhir bab</option></select></label></div>
+    <div class="trow"><label>Lanjut otomatis <span class="switch"><input type="checkbox" id="tauto" aria-label="Lanjut otomatis"><i></i></span></label></div>
+  </div>
+</div>
+<div class="ttsbar" id="asbar"><div class="trow">
+  <button class="ib" id="aplay" aria-label="Mulai atau jeda auto-scroll"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></button>
+  <label>Auto-scroll <input type="range" id="aspd" min="1" max="20" aria-label="Kecepatan auto-scroll"> <output id="asv"></output></label>
+</div></div></div>
+<input type="file" id="fbook" accept=".epub,.txt,.md,.markdown,.html,.htm,.xhtml,.fb2,.docx,.pdf" hidden>
+<div id="home" aria-label="Beranda"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="fm" id="fm"></div>
+<div class="sheet" id="lsheet"><div class="panel"><h3>Library <button class="ib" data-close aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></h3>
+  <div class="tools"><input id="lq" type="search" placeholder="Cari judul, situs, tag">
+  <select id="lsort"><option value="baca">Terakhir dibaca</option><option value="judul">Judul</option><option value="progres">Progres</option></select>
+  <div class="seg" id="lseg" role="group" aria-label="Filter library"><button data-v="all" class="on">Semua</button><button data-v="read">Dibaca</button><button data-v="fav">Favorit</button><button data-v="done">Selesai</button></div><input type="hidden" id="lfilter" value="all"></div>
+  <div id="llist"></div>
+  <div id="impbox" class="card" hidden></div>
+  <div class="tools"><button class="go" id="bexp" style="padding:8px 12px;border-radius:10px;background:var(--acc);color:var(--bg)">Ekspor backup</button>
+  <button id="bbook" style="padding:8px 12px;border:1px solid var(--line);border-radius:10px">Buka ebook</button>
+  <button id="bimp" style="padding:8px 12px;border:1px solid var(--line);border-radius:10px">Impor backup</button><input type="file" id="fimp" accept=".json" hidden></div>
+</div></div>
+<div class="sheet" id="nsheet"><div class="panel"><h3>Catatan &amp; bookmark <button class="ib" data-close aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></h3>
+  <div class="tools"><button id="addbm" style="padding:8px 12px;border-radius:10px;background:var(--acc);color:var(--bg)">Bookmark posisi ini</button>
+  <button id="xmd" style="padding:8px 12px;border:1px solid var(--line);border-radius:10px">Ekspor Markdown</button>
+  <button id="xjs" style="padding:8px 12px;border:1px solid var(--line);border-radius:10px">Ekspor JSON</button></div>
+  <div id="nlist"></div>
+</div></div>
+<div class="sheet" id="hsheet"><div class="panel"><h3><span id="htitle">Catatan</span> <button class="ib" data-close aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></h3>
+  <blockquote class="hq" id="hq"></blockquote>
+  <div class="hcols" id="hcols" role="group" aria-label="Warna highlight"></div>
+  <textarea class="field" id="hnote" rows="4" placeholder="Tulis catatan (opsional)" aria-label="Catatan"></textarea>
+  <div class="acts"><button class="btn btn-p" id="hsave">Simpan</button><button class="btn btn-s" id="hdel" hidden>Hapus highlight</button></div>
+</div></div>
+<div class="sheet" id="sheet"><div class="panel" role="dialog" aria-label="Pengaturan">
+  <h3>Pengaturan <button class="ib" id="close" aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></h3>
+  <div class="grp">Tampilan</div><div class="row"><span>Tema</span><div class="themes" id="themes"></div></div>
+  <div class="row"><span>Ukuran font</span><input type="range" id="fs" min="14" max="30"></div>
+  <div class="row"><span>Jenis font</span><select id="ff">
+    <option value="Georgia,serif">Serif</option><option value="system-ui,sans-serif">Sans</option>
+    <option value="ui-monospace,Menlo,monospace">Mono</option></select></div>
+  <div class="row"><span>Tinggi baris</span><input type="range" id="lh" min="12" max="24"></div>
+  <div class="row"><span>Jarak paragraf</span><input type="range" id="ps" min="0" max="20"></div>
+  <div class="row"><span>Lebar kolom</span><input type="range" id="w" min="320" max="900" step="10"></div>
+  <div class="row"><span>Margin</span><input type="range" id="mg" min="8" max="64"></div>
+  <div class="row"><span>Rata teks</span><select id="ta"><option value="left">Kiri</option><option value="justify">Justify</option></select></div>
+  <div class="grp">Membaca</div><div class="row"><span>Mode bab</span><select id="mode"><option value="infinite">Infinite scroll</option><option value="halaman">Halaman (geser)</option><option value="bab">Scroll per bab</option></select></div>
+  <div class="row"><span>Auto next</span><label class="switch"><input type="checkbox" id="auto" aria-label="Auto next"><i></i></label></div>
+  <div class="row"><span>Prefetch (bab)</span><input type="range" id="pre" min="1" max="3"></div>
+  <div class="row"><span>Jeda (detik)</span><input type="range" id="delay" min="0" max="5"></div>
+  <div class="row"><span>Target harian</span><input type="range" id="goal" min="5" max="120" step="5"></div>
+  <div class="grp">Jaringan dan situs</div><div class="row"><span>Selector Next situs ini</span><input type="text" id="sel" placeholder="mis. a.next-chap"></div>
+  <p class="hint" id="selsite"></p>
+  <div class="row stack"><span>Proxy (satu per baris, urut prioritas)</span><textarea id="proxies" rows="4"></textarea></div>
+  <div class="row stack"><span>Proxy sendiri (dicoba lebih dulu)</span><input type="text" id="myproxy" placeholder="https://proxy-saya.workers.dev/?url="></div>
+  <div class="grp">Lainnya</div><button class="btn btn-s" id="rst">Kembalikan tampilan dan bacaan ke bawaan</button>
+  <details><summary>Bantuan: buat proxy sendiri (Cloudflare Worker)</summary>
+  <p style="font-size:13px">Buat Worker baru di dash.cloudflare.com, tempel kode ini, lalu isi kolom Proxy sendiri dengan alamat Worker diakhiri <code>/?url=</code>.</p>
+  <pre id="wk" style="font-size:11px;overflow:auto;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--card)"></pre>
+  <button id="wkc" style="padding:6px 12px;border:1px solid var(--line);border-radius:8px">Salin kode</button></details>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/readability/0.5.0/Readability.min.js"></script>
+<script>
+"use strict";
+/* ===== Utilitas ===== */
+const $ = id => document.getElementById(id);
+const RM = () => matchMedia("(prefers-reduced-motion:reduce)").matches;
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+/* ===== Proxy pribadi (ubah di satu tempat ini) ===== */
+const PROXY_PRIBADI = "https://proxy-novel.syahbuan1525.workers.dev/?url=";
+
+/* ===== Pengaturan ===== */
+const DEFAULTS = {
+  theme:"otomatis", fs:19, ff:"Georgia,serif", lh:17.5, ps:10, w:680, mg:20, ta:"left",
+  proxies:["https://corsproxy.io/?url=","https://api.allorigins.win/raw?url=","https://api.codetabs.com/v1/proxy?quest="],
+  myproxy:PROXY_PRIBADI, voice:"", rate:1, asp:6, ttsNext:true, mode:"infinite", auto:true, pre:2, delay:1, goal:30, sel:{}
+};
+const S = Object.assign({}, DEFAULTS, store.get("settings", {}));
+if(!S.myproxy) S.myproxy = DEFAULTS.myproxy;  // proxy bawaan bila kolom kosong
+const THEMES = ["otomatis","terang","gelap","sepia","amoled","kertas"];
+
+function applySettings(){
+  const r = document.documentElement, s = r.style;
+  r.dataset.theme = S.theme;
+  s.setProperty("--fs", S.fs+"px"); s.setProperty("--ff", S.ff);
+  s.setProperty("--lh", S.lh/10); s.setProperty("--ps", S.ps/10+"em");
+  s.setProperty("--w", S.w+"px"); s.setProperty("--mg", S.mg+"px"); s.setProperty("--ta", S.ta); updateThemeColor();
+  store.set("settings", S);
+}
+
+function buildPanel(){
+  $("themes").innerHTML = "";
+  THEMES.forEach(t => {
+    const b = document.createElement("button");
+    b.textContent = t[0].toUpperCase() + t.slice(1);
+    b.className = t === S.theme ? "on" : ""; b.setAttribute("aria-pressed", String(t === S.theme));
+    b.onclick = () => { S.theme = t; applySettings(); buildPanel(); };
+    $("themes").appendChild(b);
+  });
+  ["fs","lh","ps","w","mg"].forEach(k => { $(k).value = S[k]; $(k).oninput = e => { S[k] = +e.target.value; applySettings(); }; });
+  ["ff","ta"].forEach(k => { $(k).value = S[k]; $(k).onchange = e => { S[k] = e.target.value; applySettings(); }; });
+  $("proxies").value = S.proxies.join("\n");
+  $("proxies").onchange = e => { S.proxies = e.target.value.split("\n").map(x => x.trim()).filter(Boolean); applySettings(); };
+  $("myproxy").value = S.myproxy;
+  $("myproxy").onchange = e => { S.myproxy = e.target.value.trim(); applySettings(); };
+}
+
+/* ===== Pengambilan halaman lewat proxy (retry + pindah proxy) ===== */
+async function fetchHTML(url){
+  const errs = [];
+  const one = async p => {
+    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 12000);
+    try{
+      const res = await fetch(p + encodeURIComponent(url), {signal:ctl.signal});
+      if(!res.ok) throw new Error("HTTP " + res.status);
+      const text = await res.text();
+      if(text.length < 200) throw new Error("respons terlalu pendek");
+      return text;
+    }catch(e){
+      errs.push(host(p) + ": " + (e.name === "AbortError" ? "waktu habis" : e.message === "Failed to fetch" ? "diblokir/CORS" : e.message));
+      throw e;
+    }finally{ clearTimeout(t); }
+  };
+  /* Proxy sendiri dicoba dulu; lalu proxy publik dicoba bersamaan, yang tercepat dipakai */
+  for(const group of [S.myproxy ? [S.myproxy] : [], S.proxies]){
+    if(!group.length) continue;
+    try{ return await Promise.any(group.map(one)); }catch(e){}
+  }
+  throw new Error(errs.length ? errs.join(" | ") : "Tidak ada proxy yang diatur.");
+}
+
+/* ===== Cache IndexedDB ===== */
+let dbp;
+function db(){
+  return dbp || (dbp = new Promise(res => {
+    try{
+      const r = indexedDB.open("novel", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("ch", {keyPath:"url"});
+      r.onsuccess = () => res(r.result); r.onerror = () => res(null);
+    }catch(e){ res(null); }
+  }));
+}
+async function cacheGet(url){
+  const d = await db(); if(!d) return null;
+  return new Promise(res => { const q = d.transaction("ch").objectStore("ch").get(url); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); });
+}
+let putN = 0;
+async function cachePut(ch){ const d = await db(); if(d) d.transaction("ch", "readwrite").objectStore("ch").put(ch); if(++putN % 20 === 0) cachePrune(); }
+
+/* ===== Deteksi tombol Next (selector manual, rel=next, teks link, pola angka) ===== */
+const host = u => { try{ return new URL(u).hostname; }catch(e){ return ""; } };
+const NEXT_RE = /^(next( chapter| page)?|selanjutnya|berikutnya|lanjut|(chapter|bab) (berikutnya|selanjutnya)|下一章|下一页|下一頁|下章)$/i;
+function absUrl(h, base){
+  if(!h || h[0] === "#" || /^javascript:/i.test(h)) return null;
+  try{ return new URL(h, base).href; }catch(e){ return null; }
+}
+function detectNext(doc, url){
+  const sel = S.sel[host(url)];
+  if(sel){ try{ const m = doc.querySelector(sel); const u = m && absUrl(m.getAttribute("href"), url); if(u) return u; }catch(e){} }
+  const rel = doc.querySelector("link[rel~=next],a[rel~=next]");
+  if(rel){ const u = absUrl(rel.getAttribute("href"), url); if(u) return u; }
+  for(const a of doc.querySelectorAll("a[href]")){
+    const t = a.textContent.replace(/[\s›»>→«<←]+/g, " ").trim();
+    if(NEXT_RE.test(t)){ const u = absUrl(a.getAttribute("href"), url); if(u && u !== url) return u; }
+  }
+  const m = url.match(/^(.*?)(\d+)(\D*)$/);  // angka bab terakhir pada URL
+  return m ? m[1] + (+m[2] + 1) + m[3] : null;
+}
+
+/* ===== Ekstraksi konten: Readability, lalu fallback paragraf ===== */
+function extract(html, url){
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const base = doc.createElement("base"); base.href = url; doc.head.prepend(base);
+  const next = detectNext(doc, url);
+  let title = (doc.title || "").trim(), content = "";
+  try{
+    if(window.Readability){
+      const a = new Readability(doc.cloneNode(true)).parse();
+      if(a && a.textContent && a.textContent.length > 200){ title = a.title || title; content = a.content; }
+    }
+  }catch(e){}
+  if(!content) content = [...doc.querySelectorAll("p")].filter(p => p.textContent.trim().length > 20).map(p => "<p>" + p.innerHTML + "</p>").join("");
+  if(!content) throw new Error("Konten bab tidak ditemukan di halaman ini.");
+  return {title, content, next};
+}
+const clean = h => DOMPurify.sanitize(h, {FORBID_TAGS:["style","form","iframe"], FORBID_ATTR:["style","class","id"]});
+
+/* ===== Ambil bab: cache dulu, lalu jaringan (tanpa request ganda) ===== */
+const inflight = {};
+function getChapter(url){
+  return inflight[url] || (inflight[url] = (async () => {
+    try{
+      const hit = await cacheGet(url); if(hit) return hit;
+      if(isBook(url)) throw new Error("Isi buku ini tidak ada di perangkat. Buka ulang file ebook lewat tombol Buka ebook.");
+      const x = extract(await fetchHTML(url), url);
+      const ch = {url, title:x.title, content:clean(x.content), next:x.next, t:Date.now()};
+      cachePut(ch); return ch;
+    }finally{ delete inflight[url]; }
+  })());
+}
+
+/* ===== Status bab ===== */
+let chs = [], tail = null, curEl = null, busy = false, failed = false, pf = 0, trail = [];
+
+function fill(sec, ch){
+  sec.innerHTML = "";
+  const h = document.createElement("h1"); h.textContent = ch.title || ch.url;
+  const b = document.createElement("div"); b.innerHTML = ch.content;
+  sec.append(h, b); applyMarks(sec);
+}
+function sectionFor(ch){
+  const s = document.createElement("section");
+  s.className = "ch"; s.dataset.url = ch.url; s.dataset.title = ch.title || "";
+  fill(s, ch); return s;
+}
+function skeleton(){ $("doc").setAttribute("aria-busy", "true");
+  $("doc").innerHTML = '<div class="sk"><div style="width:60%;height:26px"></div>' +
+    Array.from({length:9}, (_, i) => '<div style="width:' + (i % 4 === 3 ? 70 : 100) + '%"></div>').join("") + "</div>";
+}
+
+/* Bagian bawah: pesan status + tombol navigasi sesuai mode */
+function renderTail(msg){
+  tail.innerHTML = "";
+  if(msg){ const p = document.createElement("p"); p.className = "empty"; p.style.padding = "16px 0"; p.textContent = msg; tail.appendChild(p); }
+  const last = chs[chs.length - 1], nav = document.createElement("div"); nav.className = "nav";
+  const mk = (t, fn) => { const b = document.createElement("button"); b.textContent = t; b.onclick = fn; nav.appendChild(b); };
+  if(S.mode !== "infinite" && trail.length > 1) mk("‹ Bab sebelumnya", () => { trail.pop(); openChapter(trail[trail.length - 1]); });
+  if(last && last.next){
+    if(S.mode !== "infinite") mk("Bab berikutnya ›", () => { trail.push(last.next); openChapter(last.next); });
+    else if(!S.auto || failed) mk("Muat bab berikutnya", () => { failed = false; loadMore(true); });
+  }
+  if(nav.children.length) tail.appendChild(nav);
+}
+
+function mountFirst(ch, off){
+  if(T.on && !T.adv) ttsStop();
+  const doc = $("doc"); doc.removeAttribute("aria-busy"); doc.innerHTML = "";
+  chs = [ch]; failed = false; pf++;
+  const sec = sectionFor(ch); doc.appendChild(sec);
+  tail = document.createElement("div"); doc.appendChild(tail);
+  curEl = sec; syncCurrent(sec); renderTail();
+  window.scrollTo(0, off ? sec.getBoundingClientRect().top + scrollY + off : 0);
+  lastY = scrollY; $("bar").classList.add("hide"); prefetch(ch);
+  setTimeout(onScroll, 300);
+}
+
+/* Sinkronkan judul, URL, dan posisi dengan bab yang sedang terlihat */
+function syncCurrent(el){
+  const u = el.dataset.url;
+  if(/^https?:/.test(u)) $("url").value = u;
+  document.title = el.dataset.title || "Pembaca Novel";
+  try{ history.replaceState(history.state, "", "#" + u); }catch(e){}
+  store.set("last", u); track(u, el.dataset.title); if(/^(https?:|book:)/.test(u)) countCh(u);
+}
+
+/* Prefetch 1-3 bab ke depan dengan jeda antar request */
+async function prefetch(ch){
+  const my = pf; let c = ch;
+  for(let i = 0; i < S.pre; i++){
+    if(!c.next || isBook(c.next)) return;
+    try{ c = await getChapter(c.next); }catch(e){ return; }
+    await new Promise(r => setTimeout(r, S.delay * 1000));
+    if(my !== pf) return;
+  }
+}
+
+/* Tambahkan bab berikutnya di bawah (infinite scroll) */
+async function loadMore(force){
+  if(busy || S.mode !== "infinite" || (!S.auto && !force) || (failed && !force)) return;
+  const last = chs[chs.length - 1];
+  if(!last.next){ renderTail(isBook(last.url) ? "Akhir buku." : "Tidak ada bab berikutnya. Jika seharusnya ada, isi selector Next di Pengaturan."); return; }
+  if(chs.some(c => c.url === last.next)) return;
+  busy = true; renderTail("Memuat bab berikutnya…");
+  try{
+    const ch = await getChapter(last.next);
+    chs.push(ch); $("doc").insertBefore(sectionFor(ch), tail); renderTail(); prefetch(ch);
+  }catch(e){ failed = true; renderTail("Berhenti: " + e.message); }
+  busy = false;
+}
+
+/* Lepas bab jauh dari DOM (virtualisasi), pulihkan saat didekati lagi */
+function manage(secs){
+  if(secs.length < 4) return;
+  const ci = secs.indexOf(curEl);
+  secs.forEach((s, i) => {
+    const r = s.getBoundingClientRect(), far = r.bottom < -innerHeight * 1.5 || r.top > innerHeight * 2.5;
+    if(!s.classList.contains("gone")){
+      if(far && Math.abs(i - ci) > 1){ s.style.height = r.height + "px"; s.innerHTML = ""; s.classList.add("gone"); }
+    }else if(!far){
+      const c = chs.find(x => x.url === s.dataset.url);
+      if(c){ fill(s, c); s.classList.remove("gone"); s.style.height = ""; }
+    }
+  });
+}
+
+let tick = false, saveT, lastY = 0;
+function onScroll(){
+  if(tick) return; tick = true;
+  requestAnimationFrame(() => {
+    tick = false;
+    const secs = [...document.querySelectorAll(".ch")]; if(!secs.length) return;
+    let cur = secs[0];
+    for(const s of secs) if(s.getBoundingClientRect().top <= innerHeight * 0.4) cur = s;
+    if(cur !== curEl){ curEl = cur; syncCurrent(cur); }
+    const y = scrollY, dy = y - lastY, rc = cur.getBoundingClientRect();
+    $("prog").style.transform = "scaleX(" + Math.max(0, Math.min(1, -rc.top / Math.max(1, rc.height - innerHeight))).toFixed(3) + ")";
+    $("fabs").classList.toggle("on", y > 300); if(fm.classList.contains("on")) placeFm();
+    if(Math.abs(dy) > 10){
+      if(!$("home").classList.contains("on") && !document.querySelector(".sheet.on") && !$("bar").classList.contains("url")) $("bar").classList.toggle("hide", dy > 0 && y > 80);
+      lastY = y;
+    }
+    const r = secs[secs.length - 1].getBoundingClientRect();
+    if((innerHeight - r.top) / r.height >= 0.8) loadMore();
+    manage(secs);
+    clearTimeout(saveT);
+    saveT = setTimeout(() => savePos(cur), 500);
+  });
+}
+
+/* ===== Buka bab & galat ===== */
+async function openChapter(url, off){
+  url = (url || "").trim();
+  if(!/^https?:\/\//i.test(url) && !isBook(url)){ showError("URL harus diawali http:// atau https://", url); return; }
+  skeleton();
+  try{ mountFirst(await getChapter(url), off); }
+  catch(e){ showError(e.message, url); }
+}
+function start(url, off){ hideHome(); $("bar").classList.remove("url"); if(T.on) ttsStop(); if(AS.on) asStop(); trail = [url.trim()]; return openChapter(url, off); }
+
+function showError(msg, url){ $("doc").removeAttribute("aria-busy");
+  $("doc").innerHTML = '<div class="err" role="alert"><strong>Gagal memuat bab.</strong><p>' + msg.replace(/</g, "&lt;") +
+    '</p><p>Coba ganti urutan proxy atau isi proxy sendiri di Pengaturan. Situs dengan Cloudflare, login, atau konten JS tidak selalu bisa diambil. ' +
+    'Sebagai gantinya, tempel HTML atau teks bab di bawah.</p><textarea id="manual" placeholder="Tempel HTML atau teks bab"></textarea>' +
+    '<button id="mbtn" style="padding:9px 14px;border-radius:10px;background:var(--acc);color:var(--bg)">Tampilkan teks</button></div>';
+  const er = h("div", "acts"), rt = h("button", "btn btn-p", "Coba lagi"), px = h("button", "btn btn-s", "Pengaturan proxy");
+  rt.onclick = () => openChapter(url); px.onclick = () => $("cfg").click(); er.append(rt, px); $("doc").querySelector(".err").insertBefore(er, $("manual"));
+  $("mbtn").onclick = () => {
+    const raw = $("manual").value.trim(); if(!raw) return;
+    const html = /<\w+[^>]*>/.test(raw) ? raw : raw.split(/\n+/).map(l => "<p>" + l.replace(/</g, "&lt;") + "</p>").join("");
+    trail = []; mountFirst({url:url || "manual:" + Date.now(), title:"Bab (tempel manual)", content:clean(html), next:null});
+  };
+}
+
+/* ===== Helper DOM, unduh ===== */
+function h(tag, cls, text){ const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; }
+function download(name, text, type){
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], {type}));
+  a.download = name; document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ===== Library novel ===== */
+let lib = store.get("lib", {}), hls = store.get("hls", []), bms = store.get("bms", []);
+const isBook = u => /^book:/.test(u || "");
+const novelKey = u => { if(isBook(u)) return u.replace(/[^/]*$/, ""); if(/\d+\D*$/.test(u)) return u.replace(/\d+\D*$/, ""); const m = u.match(/^(https?:\/\/[^/]+\/.+\/)[^/]+\/?$/); return m ? m[1] : u; };
+const hash = t => [...t].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+const cleanTitle = t => (t || "").split(/\s[-–|:]\s|[|:]\s/)[0].trim();
+function track(url, title){
+  if(!/^(https?:|book:)/.test(url)) return;
+  const k = novelKey(url);
+  const n = lib[k] || (lib[k] = {key:k, title:cleanTitle(title) || host(url), site:host(url), hue:hash(k) % 360, fav:false, done:false, tags:[], prog:0, off:0});
+  n.url = url; n.chTitle = title; n.t = Date.now(); store.set("lib", lib);
+}
+function savePos(sec){
+  const off = -sec.getBoundingClientRect().top, n = lib[novelKey(sec.dataset.url)];
+  store.set("pos", {url:sec.dataset.url, off});
+  if(n){ n.off = off; n.prog = Math.max(0, Math.min(1, off / (sec.offsetHeight || 1))); if(n.book && n.total) n.prog = Math.min(1, ((+sec.dataset.url.split("/").pop() || 1) - 1 + n.prog) / n.total); store.set("lib", lib); }
+}
+async function cacheKeys(){
+  const d = await db(); if(!d) return [];
+  return new Promise(res => { const q = d.transaction("ch").objectStore("ch").getAllKeys(); q.onsuccess = () => res(q.result); q.onerror = () => res([]); });
+}
+async function cacheDel(prefix){
+  const d = await db(); if(!d) return;
+  const st = d.transaction("ch", "readwrite").objectStore("ch");
+  (await cacheKeys()).filter(k => k.startsWith(prefix)).forEach(k => st.delete(k));
+}
+async function cacheInfo(){
+  const d = await db(); if(!d) return [];
+  return new Promise(res => { const q = d.transaction("ch").objectStore("ch").getAll(); q.onsuccess = () => res(q.result.map(c => ({url:c.url, len:(c.content || "").length}))); q.onerror = () => res([]); });
+}
+const fmtSize = b => b < 1048576 ? Math.max(1, Math.round(b / 1024)) + " KB" : (b / 1048576).toFixed(1) + " MB";
+function arm(b, fn){   // dua ketukan menggantikan confirm()
+  if(b.dataset.arm){ delete b.dataset.arm; fn(); return; }
+  const t0 = b.textContent; b.dataset.arm = 1; b.textContent = "Ketuk lagi";
+  setTimeout(() => { if(b.isConnected && b.dataset.arm){ delete b.dataset.arm; b.textContent = t0; } }, 3000);
+}
+function editForm(n, inf){
+  inf.innerHTML = "";
+  const t = h("input", "field"), hu = h("input"), tg = h("input", "field"), ok = h("button", "btn btn-p", "Simpan"), no = h("button", "btn btn-s", "Batal"), row = h("div", "acts");
+  t.value = n.title; t.setAttribute("aria-label", "Judul"); tg.value = n.tags.join(", "); tg.placeholder = "Tag, pisah koma"; tg.setAttribute("aria-label", "Tag");
+  hu.type = "range"; hu.min = 0; hu.max = 360; hu.value = n.hue; hu.setAttribute("aria-label", "Warna cover"); hu.style.cssText = "width:100%;min-height:44px;accent-color:var(--cy)";
+  ok.onclick = () => { n.title = t.value.trim() || n.title; n.hue = +hu.value; n.tags = tg.value.split(",").map(x => x.trim()).filter(Boolean); store.set("lib", lib); renderLib(); };
+  no.onclick = renderLib; row.append(ok, no); inf.append(t, hu, tg, row);
+}
+async function renderLib(){
+  const q = $("lq").value.toLowerCase(), f = $("lfilter").value, so = $("lsort").value, info = await cacheInfo();
+  let items = Object.values(lib).filter(n => (n.title + " " + n.site + " " + n.tags.join(" ")).toLowerCase().includes(q));
+  if(f === "fav") items = items.filter(n => n.fav);
+  if(f === "read") items = items.filter(n => !n.done);
+  if(f === "done") items = items.filter(n => n.done);
+  items.sort(so === "judul" ? (a, b) => a.title.localeCompare(b.title) : so === "progres" ? (a, b) => b.prog - a.prog : (a, b) => b.t - a.t);
+  const box = $("llist"); box.innerHTML = "";
+  if(!items.length){
+    const any = Object.keys(lib).length, em = h("div", "empty");
+    em.append(h("h2", "", any ? "Tidak ada novel yang cocok" : "Library masih kosong"), h("p", "", any ? "Ubah kata kunci atau filter." : "Novel masuk otomatis saat kamu membuka bab."));
+    if(!any){ const b = h("button", "btn btn-p", "Tempel tautan bab"); b.onclick = () => { $("lsheet").classList.remove("on"); showHome(); }; em.appendChild(b); const b2 = h("button", "btn btn-s", "Buka ebook"); b2.onclick = () => $("fbook").click(); em.appendChild(b2); }
+    box.appendChild(em); return;
+  }
+  items.forEach(n => {
+    const c = h("div", "lcard"), cv = h("div", "cover", n.title), mine = info.filter(k => k.url.startsWith(n.key));
+    cv.style.background = "linear-gradient(135deg,hsl(" + n.hue + " 45% 38%),hsl(" + (n.hue + 40) + " 50% 20%))";
+    if(n.book) cacheGet(n.key).then(m => { if(m && m.cover){ cv.style.background = "url(" + m.cover + ") center/cover"; cv.textContent = ""; cv.setAttribute("role", "img"); cv.setAttribute("aria-label", "Sampul " + n.title); } });
+    const inf = h("div"); inf.append(h("h4", "", (n.fav ? "★ " : "") + n.title),
+      h("small", "", n.site + (n.tags.length ? " · " + n.tags.join(", ") : "")),
+      h("small", "", (n.chTitle || "") + " · " + (n.book ? "Bab " + n.url.split("/").pop() + "/" + (n.total || "?") + " · " + Math.round(n.prog * 100) + "% buku" : Math.round(n.prog * 100) + "% bab ini")),
+      h("small", "", (n.book ? Math.max(0, mine.length - 1) + " bab ebook" : mine.length + " bab ter-cache") + " · " + fmtSize(mine.reduce((a, k) => a + k.len, 0))));
+    const a = h("div", "acts"), a2 = h("div", "acts"); a2.hidden = true;
+    const mk = (box2, t, fn, cls, armed) => { const b = h("button", cls, t); b.onclick = armed ? () => arm(b, fn) : fn; box2.appendChild(b); };
+    mk(a, "Lanjut baca", () => { $("lsheet").classList.remove("on"); start(n.url, n.off); }, "pri");
+    mk(a, n.fav ? "Hapus favorit" : "Favorit", () => { n.fav = !n.fav; store.set("lib", lib); renderLib(); });
+    mk(a, n.done ? "Belum selesai" : "Tandai selesai", () => { n.done = !n.done; store.set("lib", lib); renderLib(); });
+    mk(a, "Kelola", () => { a2.hidden = !a2.hidden; });
+    mk(a2, "Edit", () => editForm(n, inf));
+    if(!n.book) mk(a2, "Hapus cache", async () => { await cacheDel(n.key); renderLib(); }, "", true);
+    mk(a2, "Hapus", n.book ? async () => { delete lib[n.key]; store.set("lib", lib); await cacheDel(n.key); renderLib(); toast("Ebook dihapus dari perangkat."); } : () => {
+      const bak = lib[n.key]; delete lib[n.key]; store.set("lib", lib); renderLib();
+      toast("Novel dihapus dari library.", "Urungkan", () => { lib[n.key] = bak; store.set("lib", lib); renderLib(); });
+    }, "", !!n.book);
+    inf.append(a, a2); c.append(cv, inf); box.appendChild(c);
+  });
+}
+
+/* ===== Highlight, catatan, bookmark (Tahap 5) ===== */
+const HLC = ["#ffe86b", "#8fe3a0", "#8ec5ff", "#ffa6c9", "#ffb87a"], CTX = 20;
+let HS = null;
+function textMap(sec){
+  const nodes = [], w = document.createTreeWalker(sec, NodeFilter.SHOW_TEXT); let txt = "";
+  while(w.nextNode()){ const n = w.currentNode; nodes.push({n, s:txt.length}); txt += n.data; }
+  return {nodes, txt};
+}
+/* Bungkus teks pada offset [s,e) (relatif teks bab) dengan <mark> */
+function wrapOffsets(sec, s, e, color, id, note){
+  const segs = [];
+  textMap(sec).nodes.forEach(o => {
+    const a = o.s, b = a + o.n.length;
+    if(b <= s || a >= e) return;
+    segs.push([o.n, Math.max(s, a) - a, Math.min(e, b) - a]);
+  });
+  segs.forEach(([n, so, eo]) => {
+    const part = n.data.slice(so, eo);
+    if(eo <= so || (!/\S/.test(part) && /\n/.test(part))) return;
+    const rr = document.createRange(); rr.setStart(n, so); rr.setEnd(n, eo);
+    const m = h("mark"); m.dataset.id = id; m.dataset.c = color; if(note) m.dataset.n = 1;
+    try{ rr.surroundContents(m); }catch(err){}
+  });
+}
+/* Cari posisi highlight: offset tersimpan dulu, lalu teks + konteks; data lama (pieces) dimigrasi ke v2 */
+function locate(x, full){
+  const key = x.v === 2 ? x.text : (x.pieces && x.pieces.length ? x.pieces.join("") : x.text);
+  const len = x.v === 2 ? (x.len || key.length) : key.length;
+  if(x.v === 2 && full.substr(x.s, key.length) === key) return [[x.s, x.s + len]];
+  if(key){
+    let i = full.indexOf(key), first = -1;
+    while(i >= 0){
+      if(first < 0) first = i;
+      if(!x.pre || full.slice(Math.max(0, i - x.pre.length), i) === x.pre) break;
+      i = full.indexOf(key, i + 1);
+    }
+    const at = i >= 0 ? i : first;
+    if(at >= 0){ Object.assign(x, {v:2, s:at, len, text:key.slice(0, 500), pre:full.slice(Math.max(0, at - CTX), at)}); delete x.pieces; return [[at, at + len]]; }
+  }
+  if(x.pieces){
+    let cur = 0; const out = [];
+    x.pieces.forEach(pc => { const i = full.indexOf(pc, cur); if(i >= 0){ out.push([i, i + pc.length]); cur = i + pc.length; } });
+    return out;
+  }
+  return [];
+}
+function applyMarks(sec, only){
+  const list = hls.filter(x => x.url === sec.dataset.url && (!only || x.id === only) && !sec.querySelector('mark[data-id="' + x.id + '"]'));
+  let dirty = false;
+  list.forEach(x => {
+    const sig = x.v + ":" + x.s;
+    locate(x, textMap(sec).txt).forEach(([s, e]) => wrapOffsets(sec, s, e, x.color, x.id, x.note));
+    if(sig !== x.v + ":" + x.s) dirty = true;
+  });
+  if(dirty) store.set("hls", hls);
+}
+function addHl(color, note, rng){
+  const sel = getSelection();
+  const r = rng || (sel.rangeCount && !sel.isCollapsed ? sel.getRangeAt(0).cloneRange() : null); if(!r) return null;
+  const el = n => n.nodeType === 1 ? n : n.parentNode;
+  const sec = el(r.startContainer).closest(".ch"), sec2 = el(r.endContainer).closest(".ch");
+  if(!sec) return null;
+  if(sec !== sec2){ toast("Pilih teks di dalam satu bab."); return null; }
+  const pre = document.createRange(); pre.selectNodeContents(sec); pre.setEnd(r.startContainer, r.startOffset);
+  const s = pre.toString().length, txt = r.toString();
+  if(!txt.trim()) return null;
+  const x = {id:Date.now().toString(36), url:sec.dataset.url, title:sec.dataset.title, text:txt.slice(0, 500), len:txt.length, s, pre:textMap(sec).txt.slice(Math.max(0, s - CTX), s), color, note:note || "", t:Date.now(), v:2};
+  wrapOffsets(sec, s, s + txt.length, color, x.id, x.note); hls.push(x); store.set("hls", hls);
+  sel.removeAllRanges(); hideFm(); return x;
+}
+function delHl(id){
+  const i = hls.findIndex(v => v.id === id); if(i < 0) return;
+  const bak = hls[i]; hls.splice(i, 1); store.set("hls", hls);
+  document.querySelectorAll('mark[data-id="' + id + '"]').forEach(k => k.replaceWith(...k.childNodes));
+  renderNotes();
+  toast("Highlight dihapus.", "Urungkan", () => {
+    hls.push(bak); store.set("hls", hls);
+    document.querySelectorAll(".ch:not(.gone)").forEach(s => { if(s.dataset.url === bak.url) applyMarks(s, bak.id); });
+    renderNotes();
+  });
+}
+function delBm(id){
+  const i = bms.findIndex(v => v.id === id); if(i < 0) return;
+  const bak = bms[i]; bms.splice(i, 1); store.set("bms", bms); renderNotes();
+  toast("Bookmark dihapus.", "Urungkan", () => { bms.push(bak); store.set("bms", bms); renderNotes(); });
+}
+
+/* Lembar catatan (pengganti prompt/confirm) */
+function drawCols(){
+  const box = $("hcols"); box.innerHTML = "";
+  HLC.forEach((c, i) => {
+    const b = h("button", "dot" + (HS.color === i ? " sel" : "")); b.style.setProperty("--dc", c);
+    b.setAttribute("aria-label", "Warna " + (i + 1)); b.setAttribute("aria-pressed", String(HS.color === i));
+    b.onclick = () => { HS.color = i; drawCols(); }; box.appendChild(b);
+  });
+}
+function openHl(mode, o){
+  HS = {mode, color:+o.color || 0, range:o.range || null, id:o.id || null};
+  $("htitle").textContent = mode === "new" ? "Catatan baru" : "Edit highlight";
+  const t = (o.text || "").replace(/\s+/g, " ").trim(); $("hq").textContent = t.length > 200 ? t.slice(0, 200) + "…" : t;
+  $("hnote").value = o.note || ""; $("hdel").hidden = mode !== "edit"; drawCols(); $("hsheet").classList.add("on");
+  if(mode === "new") setTimeout(() => $("hnote").focus(), 80);
+}
+$("hsave").onclick = () => {
+  if(!HS) return; const note = $("hnote").value.trim();
+  if(HS.mode === "new"){ if(!addHl(HS.color, note, HS.range)) return; }
+  else{
+    const x = hls.find(v => v.id === HS.id);
+    if(x){
+      x.note = note; x.color = HS.color; store.set("hls", hls);
+      document.querySelectorAll('mark[data-id="' + x.id + '"]').forEach(m => { m.dataset.c = x.color; if(note) m.dataset.n = 1; else delete m.dataset.n; });
+      renderNotes();
+    }
+  }
+  $("hsheet").classList.remove("on"); HS = null;
+};
+$("hdel").onclick = () => { if(HS && HS.id) delHl(HS.id); $("hsheet").classList.remove("on"); HS = null; };
+
+/* Menu seleksi: di bawah seleksi (menu bawaan Edge di atas), selalu di dalam layar */
+const fm = $("fm"), hideFm = () => fm.classList.remove("on");
+function noteFromSel(){
+  const sel = getSelection(); if(!sel.rangeCount || sel.isCollapsed) return;
+  const r = sel.getRangeAt(0).cloneRange(), t = r.toString();
+  sel.removeAllRanges(); hideFm(); openHl("new", {range:r, text:t});
+}
+const r1 = h("div", "fmr"), r2 = h("div", "fmr");
+HLC.forEach((c, i) => {
+  const b = h("button", "dot"); b.style.setProperty("--dc", c);
+  b.setAttribute("aria-label", "Highlight warna " + (i + 1)); b.onclick = () => addHl(i); r1.appendChild(b);
+});
+[["Catat", noteFromSel],
+ ["Salin", () => { const t = getSelection().toString(); hideFm(); try{ navigator.clipboard.writeText(t).then(() => toast("Disalin.")); }catch(e){} }],
+ ["Cari", () => window.open("https://www.google.com/search?q=" + encodeURIComponent(getSelection().toString()), "_blank")],
+ ["Terjemahkan", () => window.open("https://translate.google.com/?sl=auto&tl=id&text=" + encodeURIComponent(getSelection().toString()), "_blank")]]
+  .forEach(([t, fn]) => { const b = h("button", "", t); b.onclick = fn; r2.appendChild(b); });
+fm.append(r1, r2);
+fm.addEventListener("pointerdown", e => e.preventDefault());
+function placeFm(){
+  const sel = getSelection();
+  if(!sel.rangeCount || sel.isCollapsed || !$("doc").contains(sel.anchorNode)){ hideFm(); return; }
+  const r = sel.getRangeAt(0).getBoundingClientRect(), vh = window.visualViewport ? visualViewport.height : innerHeight;
+  const dk = document.querySelector(".dock"), br = $("bar").getBoundingClientRect();
+  const top0 = $("bar").classList.contains("hide") ? 8 : br.bottom + 8, bot = vh - (dk ? dk.offsetHeight : 0) - 8;
+  if(r.bottom < top0 || r.top > bot){ hideFm(); return; }
+  fm.classList.add("on");
+  const fh = fm.offsetHeight, fw = fm.offsetWidth;
+  let y = r.bottom + 32;                       // ruang untuk handle seleksi
+  if(y + fh > bot) y = r.top - fh - 56;        // tak muat di bawah: di atas, menyisakan ruang menu bawaan
+  fm.style.top = Math.max(top0, Math.min(y, bot - fh)) + "px";
+  fm.style.left = Math.max(8, Math.min(innerWidth - fw - 8, r.left)) + "px";
+}
+let selT;
+document.addEventListener("selectionchange", () => { clearTimeout(selT); selT = setTimeout(placeFm, 250); });
+$("doc").addEventListener("click", e => {
+  const m = e.target.closest("mark"); if(!m || !getSelection().isCollapsed) return;
+  const x = hls.find(v => v.id === m.dataset.id); if(!x) return;
+  openHl("edit", {id:x.id, text:x.text, note:x.note, color:x.color});
+});
+function addBookmark(){
+  if(!curEl) return;
+  bms.push({id:Date.now().toString(36), url:curEl.dataset.url, title:curEl.dataset.title, off:-curEl.getBoundingClientRect().top, t:Date.now()});
+  store.set("bms", bms); renderNotes(); toast("Bookmark ditambahkan.");
+}
+function curNovel(){ return curEl ? novelKey(curEl.dataset.url) : null; }
+function renderNotes(){
+  const k = curNovel(), box = $("nlist"); box.innerHTML = "";
+  const hs = hls.filter(x => !k || novelKey(x.url) === k), bs = bms.filter(x => !k || novelKey(x.url) === k);
+  if(!hs.length && !bs.length){ box.appendChild(h("p", "empty", "Belum ada bookmark atau highlight. Pilih teks untuk menyorot atau mencatat.")); return; }
+  const row = (txt, sub, acts, color) => {
+    const d = h("div", "note"); if(color) d.style.borderLeftColor = color;
+    d.appendChild(h("div", "", txt)); if(sub) d.appendChild(h("small", "", sub));
+    const a = h("div", "acts"); acts.forEach(([t, fn]) => { const b = h("button", "", t); b.onclick = fn; a.appendChild(b); });
+    d.appendChild(a); box.appendChild(d);
+  };
+  bs.forEach(b => row("🔖 " + (b.title || b.url), "", [["Buka", () => { $("nsheet").classList.remove("on"); start(b.url, b.off); }], ["Hapus", () => delBm(b.id)]]));
+  hs.forEach(x => row("“" + x.text + "”", x.note ? "Catatan: " + x.note : x.title, [
+    ["Buka", () => { $("nsheet").classList.remove("on"); start(x.url).then(() => { const m = document.querySelector('mark[data-id="' + x.id + '"]'); if(m) window.scrollTo(0, m.getBoundingClientRect().top + scrollY - 120); }); }],
+    ["Edit", () => openHl("edit", {id:x.id, text:x.text, note:x.note, color:x.color})],
+    ["Hapus", () => delHl(x.id)]], HLC[x.color]));
+}
+function exportNotes(fmt){
+  const k = curNovel(), hs = hls.filter(x => !k || novelKey(x.url) === k), bs = bms.filter(x => !k || novelKey(x.url) === k);
+  const n = lib[k] ? lib[k].title : "novel";
+  if(fmt === "json") return download("catatan-" + n + ".json", JSON.stringify({bookmarks:bs, highlights:hs}, null, 2), "application/json");
+  const md = "# " + n + "\n\n## Bookmark\n\n" + bs.map(b => "- [" + (b.title || b.url) + "](" + b.url + ")").join("\n") +
+    "\n\n## Highlight dan catatan\n\n" + hs.map(x => "> " + x.text.replace(/\n/g, " ") + "\n\n" + (x.note ? "Catatan: " + x.note + "\n\n" : "") + "— [" + (x.title || "bab") + "](" + x.url + ")").join("\n\n") + "\n";
+  download("catatan-" + n + ".md", md, "text/markdown");
+}
+
+/* ===== Backup JSON ===== */
+$("bexp").onclick = () => download("backup-novel.json", JSON.stringify({lib, hls, bms, stats, settings:S, pos:store.get("pos", null), last:store.get("last", "")}), "application/json");
+$("bimp").onclick = () => $("fimp").click();
+/* Impor backup: pratinjau, lalu Gabung (default) atau Timpa semua */
+let pend = null;
+function impShow(){
+  const b = $("impbox"); b.innerHTML = ""; b.hidden = !pend; if(!pend) return;
+  b.appendChild(h("p", "", "Backup siap: " + Object.keys(pend.lib || {}).length + " novel, " + (pend.hls || []).length + " highlight, " + (pend.bms || []).length + " bookmark."));
+  const a = h("div", "acts"), g = h("button", "btn btn-p", "Gabung"), o = h("button", "btn btn-s", "Timpa semua"), c = h("button", "btn btn-g", "Batal");
+  g.onclick = () => impDo(true); o.onclick = () => arm(o, () => impDo(false)); c.onclick = () => { pend = null; impShow(); };
+  a.append(g, o, c); b.appendChild(a);
+}
+function mergeData(d){
+  const newer = (a, b) => (!a || (b.t || 0) > (a.t || 0)) ? b : a;
+  const lb = Object.assign({}, lib); Object.entries(d.lib || {}).forEach(([k, v]) => { lb[k] = newer(lb[k], v); });
+  const uni = (a, b) => { const m = new Map(); (a || []).concat(b || []).forEach(x => { if(x && x.id && !m.has(x.id)) m.set(x.id, x); }); return [...m.values()]; };
+  const st = {v:1, days:Object.assign({}, stats.days), nov:Object.assign({}, stats.nov)}, ds = d.stats || {};
+  Object.entries(ds.days || {}).forEach(([k, v]) => { const c = st.days[k]; st.days[k] = c ? {s:Math.max(c.s || 0, v.s || 0), c:Math.max(c.c || 0, v.c || 0), u:c.u} : v; });
+  Object.entries(ds.nov || {}).forEach(([k, v]) => { st.nov[k] = Math.max(st.nov[k] || 0, +v || 0); });
+  lib = lb; hls = uni(hls, d.hls); bms = uni(bms, d.bms); stats = st;
+  store.set("lib", lib); store.set("hls", hls); store.set("bms", bms); store.set("stats", stats);
+  if(!store.get("last", "") && typeof d.last === "string") store.set("last", d.last);
+  if(!store.get("pos", null) && d.pos) store.set("pos", d.pos);
+}
+function impDo(merge){
+  const d = pend; pend = null; impShow();
+  if(merge){ mergeData(d); toast("Backup digabung."); renderLib(); if($("home").classList.contains("on")) renderHome(); return; }
+  ["lib", "hls", "bms", "settings", "stats", "pos"].forEach(k => { if(d[k]) store.set(k, d[k]); });
+  if(typeof d.last === "string" && d.last) store.set("last", d.last);
+  if(d.lib) lib = d.lib; if(d.hls) hls = d.hls; if(d.bms) bms = d.bms;
+  if(d.stats){ stats = Object.assign({v:1, days:{}}, d.stats); stats.nov = stats.nov || {}; }
+  toast("Backup dipulihkan. Memuat ulang…"); setTimeout(() => location.reload(), 900);
+}
+$("fimp").onchange = async e => {
+  try{
+    const d = JSON.parse(await e.target.files[0].text()), ob = x => x && typeof x === "object" && !Array.isArray(x);
+    if(!ob(d) || (d.lib && !ob(d.lib)) || (d.hls && !Array.isArray(d.hls)) || (d.bms && !Array.isArray(d.bms)) || (d.settings && !ob(d.settings)) || (d.stats && !ob(d.stats)) || !(d.lib || d.hls || d.bms || d.settings || d.stats)) throw 0;
+    pend = d; impShow();
+  }catch(err){ toast("File backup tidak valid."); }
+  e.target.value = "";
+};
+
+/* ===== Event library & catatan ===== */
+$("blib").onclick = () => { renderLib(); $("lsheet").classList.add("on"); };
+$("bnote").onclick = () => { renderNotes(); $("nsheet").classList.add("on"); };
+["lq", "lsort", "lfilter"].forEach(i => $(i).addEventListener("input", renderLib));
+$("lseg").onclick = e => { const b = e.target.closest("button"); if(!b) return; $("lfilter").value = b.dataset.v; [...$("lseg").children].forEach(x => { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", String(x === b)); }); renderLib(); };
+$("addbm").onclick = addBookmark;
+$("xmd").onclick = () => exportNotes("md"); $("xjs").onclick = () => exportNotes("json");
+document.querySelectorAll(".sheet").forEach(sh => sh.addEventListener("click", e => { if(e.target === sh || e.target.closest("[data-close]")) sh.classList.remove("on"); }));
+
+/* ===== Text-to-Speech (Web Speech API) ===== */
+const TTS_OK = "speechSynthesis" in window;
+const T = {on:false, list:[], i:0, tok:0, sec:null, adv:false};
+const SENT = /[^.!?…。！？\n]+[.!?…。！？]*["”’')\]]*\s*/g;
+const ICON_PLAY = '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>', ICON_PAUSE = '<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>';
+
+/* Pecah bab menjadi kalimat, tiap kalimat punya Range untuk disorot */
+function sentencesOf(sec){
+  const out = [];
+  sec.querySelectorAll("h1,p,li").forEach(b => {
+    const nodes = [], w = document.createTreeWalker(b, NodeFilter.SHOW_TEXT); let txt = "";
+    while(w.nextNode()){ nodes.push({n:w.currentNode, s:txt.length}); txt += w.currentNode.data; }
+    if(!nodes.length) return;
+    const at = o => { let k = nodes.length - 1; while(k > 0 && nodes[k].s > o) k--; return [nodes[k].n, o - nodes[k].s]; };
+    for(const m of txt.matchAll(SENT)){
+      const t = m[0].trim(); if(!/[\p{L}\p{N}]/u.test(t)) continue;
+      const a = at(m.index), end = m.index + m[0].trimEnd().length, z = at(end - 1), r = document.createRange();
+      r.setStart(a[0], a[1]); r.setEnd(z[0], z[1] + 1); out.push({text:t, range:r});
+    }
+  });
+  return out;
+}
+function ungone(sec){
+  if(!sec.classList.contains("gone")) return;
+  const c = chs.find(x => x.url === sec.dataset.url);
+  if(c){ fill(sec, c); sec.classList.remove("gone"); sec.style.height = ""; }
+}
+function ttsMark(range){
+  document.querySelectorAll(".tts-on").forEach(e => e.classList.remove("tts-on"));
+  if(window.CSS && CSS.highlights && window.Highlight) CSS.highlights.set("tts", new Highlight(range));
+  else{ const el = range.startContainer.parentElement && range.startContainer.parentElement.closest("p,h1,li"); if(el) el.classList.add("tts-on"); }
+  const r = range.getBoundingClientRect();
+  if(r.top < 90 || r.bottom > innerHeight - 60 - document.querySelector(".dock").offsetHeight) window.scrollBy({top:r.top - innerHeight * 0.3, behavior:RM() ? "auto" : "smooth"});
+}
+function ttsUI(){ $("tplay").innerHTML = T.on ? ICON_PAUSE : ICON_PLAY; $("tplay").setAttribute("aria-label", T.on ? "Jeda" : "Putar"); ttsInfo(); }
+
+function say(){
+  if(!T.on) return;
+  if(AS.on) asStop();
+  if(T.sleepAt && Date.now() > T.sleepAt){ ttsStop(); toast("Timer tidur: TTS dihentikan."); return; }
+  awake(true); keepAlive(true);
+  if(T.i >= T.list.length){ ttsEnd(); return; }
+  const s = T.list[T.i];
+  if(S.edgeOn && S.edgeUrl && !T.edgeOff){ edgeSay(s, ++T.tok); return; }
+  const u = new SpeechSynthesisUtterance(s.text), my = ++T.tok, v = pickVoice();
+  if(v){ u.voice = v; u.lang = v.lang; } else if(!S.voiceSet) u.lang = "en-US";
+  u.rate = S.rate; ttsMark(s.range); ttsInfo();
+  u.onend = () => { if(my === T.tok && T.on){ T.retried = false; T.i++; say(); } };
+  u.onerror = e => {
+    if(my !== T.tok || e.error === "interrupted" || e.error === "canceled") return;
+    if(v && !T.retried){ T.retried = true; T.noVoice = true; toast("Suara gagal, memakai suara lokal."); say(); return; }
+    T.on = false; ttsUI(); toast("TTS berhenti: " + (e.error || "galat"));
+  };
+  speechSynthesis.speak(u);
+}
+function ttsHalt(){ T.on = false; T.tok++; speechSynthesis.cancel(); ttsUI(); awake(AS.on); keepAlive(false); }
+function ttsPause(){ ttsHalt(); }
+function ttsStop(){
+  ttsHalt(); T.list = []; T.i = 0; T.sec = null; T.noVoice = false; T.retried = false; T.sleepAt = 0; T.sleepCh = false; $("tsleep").value = "0"; ttsInfo();
+  if(window.CSS && CSS.highlights) CSS.highlights.delete("tts");
+  document.querySelectorAll(".tts-on").forEach(e => e.classList.remove("tts-on"));
+}
+function ttsStart(){
+  if(!curEl) return;
+  T.sec = curEl; T.list = sentencesOf(T.sec); T.i = 0;
+  const k = T.list.findIndex(x => x.range.getBoundingClientRect().bottom > 90);  // mulai dari yang terlihat
+  if(k > 0) T.i = k;
+  if(!T.list.length) return;
+  T.noVoice = false; T.retried = false; T.edgeOff = false; $("asbar").classList.remove("on"); $("tts").classList.add("on");
+  T.on = true; ttsUI(); say();
+}
+function ttsPlay(){
+  if(T.list.length && document.contains(T.sec)){ T.on = true; ttsUI(); say(); } else ttsStart();
+}
+/* Akhir bab: lanjut ke bab berikutnya bila "Lanjut otomatis" aktif */
+async function ttsEnd(){
+  if(T.sleepCh){ ttsStop(); toast("Timer tidur: berhenti di akhir bab."); return; }
+  if(!S.ttsNext){ ttsStop(); return; }
+  const secs = [...document.querySelectorAll(".ch")], last = chs[chs.length - 1];
+  let nx = secs[secs.indexOf(T.sec) + 1];
+  if(!nx){
+    if(!last || !last.next){ ttsStop(); return; }
+    T.adv = true;
+    try{
+      if(S.mode === "infinite"){ failed = false; await loadMore(true); nx = document.querySelectorAll(".ch")[secs.length]; }
+      else{ trail.push(last.next); await openChapter(last.next); nx = document.querySelector(".ch"); }
+    }finally{ T.adv = false; }
+  }
+  if(!nx || !T.on){ ttsStop(); return; }
+  ungone(nx); T.sec = nx; T.list = sentencesOf(nx); T.i = 0;
+  if(!T.list.length){ ttsStop(); return; }
+  say();
+}
+function ttsJump(d){
+  if(!T.list.length){ ttsStart(); return; }
+  T.i = Math.max(0, Math.min(T.list.length - 1, T.i + d)); T.tok++; speechSynthesis.cancel(); T.on = true; ttsUI(); say();
+}
+function bestVoice(vs){
+  const sc = v => (/^en[-_]US$/i.test(v.lang) ? 4 : /^en/i.test(v.lang) ? 2 : 0) + (/natural/i.test(v.name) ? 5 : 0);
+  let b = null, bs = 0; vs.forEach(v => { const s = sc(v); if(s > bs){ b = v; bs = s; } });
+  return b;
+}
+/* Prioritas: pilihan pengguna (tidak ditimpa) > otomatis Natural English (US) > en-US > en */
+function pickVoice(){
+  const vs = speechSynthesis.getVoices();
+  if(T.noVoice) return vs.find(v => /^en/i.test(v.lang) && v.localService) || null;
+  const cur = S.voice && vs.find(v => v.voiceURI === S.voice);
+  if(cur) return cur;
+  return S.voiceSet ? null : bestVoice(vs);
+}
+function voiceHint(){ const v = pickVoice(); $("tvhint").textContent = v ? "Dipakai: " + v.name + (v.localService ? "" : " (online)") : "Suara bawaan perangkat"; }
+function loadVoices(){
+  const vs = speechSynthesis.getVoices(), sel = $("tvoice");
+  if(!vs.length){ sel.innerHTML = '<option value="">Memuat suara…</option>'; return false; }
+  sel.innerHTML = "";
+  const add = (v, t) => { const o = h("option", "", t); o.value = v; sel.appendChild(o); };
+  add("__auto", "Otomatis (Natural English US bila ada)"); add("", "Suara bawaan perangkat");
+  const sc = v => (/natural/i.test(v.name) ? 0 : 2) + (/^en[-_]US$/i.test(v.lang) ? 0 : /^en/i.test(v.lang) ? .5 : /^id/i.test(v.lang) ? 1 : 3);
+  vs.slice().sort((a, b) => sc(a) - sc(b) || a.name.localeCompare(b.name)).forEach(v => add(v.voiceURI, v.name + " (" + v.lang + ")" + (v.localService ? "" : " · online")));
+  sel.value = S.voice && vs.some(v => v.voiceURI === S.voice) ? S.voice : S.voiceSet ? "" : "__auto";
+  voiceHint(); return true;
+}
+function ttsInfo(){
+  const n = T.list.length, t = (T.sec && T.sec.dataset.title) || (curEl && curEl.dataset.title) || "Bab";
+  $("ttitle").textContent = t;
+  $("tpos").textContent = n ? (T.i + 1) + " / " + n + " kalimat" + (T.on ? "" : " · jeda") : "Siap";
+  $("tprog").style.transform = "scaleX(" + (n ? Math.min(1, (T.i + 1) / n) : 0).toFixed(3) + ")";
+}
+if(!TTS_OK) $("btts").hidden = true;
+else{
+  $("btts").onclick = () => { $("asbar").classList.remove("on"); $("tts").classList.toggle("on"); ttsInfo(); };
+  $("tmore").onclick = () => { const s = $("tset"); s.hidden = !s.hidden; $("tmore").setAttribute("aria-expanded", String(!s.hidden)); };
+  $("tsleep").onchange = e => { const v = e.target.value; T.sleepCh = v === "bab"; T.sleepAt = +v > 0 ? Date.now() + v * 60000 : 0; if(+v > 0) toast("TTS berhenti dalam " + v + " menit."); };
+  $("tplay").onclick = () => T.on ? ttsPause() : ttsPlay();
+  $("tstop").onclick = ttsStop;
+  $("tprev").onclick = () => ttsJump(-1); $("tnext").onclick = () => ttsJump(1);
+  $("trate").value = S.rate * 10; $("trv").textContent = S.rate.toFixed(1) + "x";
+  $("trate").oninput = e => { S.rate = e.target.value / 10; $("trv").textContent = S.rate.toFixed(1) + "x"; applySettings(); };
+  $("tauto").checked = S.ttsNext; $("tauto").onchange = e => { S.ttsNext = e.target.checked; applySettings(); };
+  $("tvoice").onchange = e => { const v = e.target.value; S.voice = v === "__auto" ? "" : v; S.voiceSet = v !== "__auto"; T.noVoice = false; applySettings(); voiceHint(); };
+  speechSynthesis.onvoiceschanged = loadVoices; let vTry = 0; const vTm = setInterval(() => { if(loadVoices() || ++vTry > 12) clearInterval(vTm); }, 500);
+  addEventListener("pagehide", () => speechSynthesis.cancel());
+}
+
+/* ===== Latar belakang: audio senyap + Media Session agar TTS tetap hidup saat layar mati ===== */
+let kaEl = null, kaTitle = "";
+function silentWav(){
+  const rate = 8000, n = rate, b = new DataView(new ArrayBuffer(44 + n * 2));
+  const w = (o, t) => [...t].forEach((c, i) => b.setUint8(o + i, c.charCodeAt(0)));
+  w(0, "RIFF"); b.setUint32(4, 36 + n * 2, true); w(8, "WAVEfmt "); b.setUint32(16, 16, true);
+  b.setUint16(20, 1, true); b.setUint16(22, 1, true); b.setUint32(24, rate, true); b.setUint32(28, rate * 2, true);
+  b.setUint16(32, 2, true); b.setUint16(34, 16, true); w(36, "data"); b.setUint32(40, n * 2, true);
+  for(let i = 0; i < n; i++) b.setInt16(44 + i * 2, i % 2 ? 2 : -2, true);  // amplitudo sangat kecil, tidak terdengar
+  return URL.createObjectURL(new Blob([b], {type:"audio/wav"}));
+}
+function keepAlive(on){
+  if(!kaEl){ kaEl = new Audio(silentWav()); kaEl.loop = true; }
+  if(on){ if(kaEl.paused) kaEl.play().catch(() => {}); } else kaEl.pause();
+  if(!("mediaSession" in navigator)) return;
+  navigator.mediaSession.playbackState = on ? "playing" : "paused";
+  const title = (T.sec && T.sec.dataset.title) || "Bab";
+  if(on && title !== kaTitle){ kaTitle = title; try{ navigator.mediaSession.metadata = new MediaMetadata({title, artist:((T.sec && lib[novelKey(T.sec.dataset.url)]) || {}).title || "Pembaca Novel"}); }catch(e){} }
+}
+if("mediaSession" in navigator){
+  [["play", () => ttsPlay()], ["pause", ttsPause], ["previoustrack", () => ttsJump(-1)], ["nexttrack", () => ttsJump(1)], ["stop", ttsStop], ["seekbackward", () => ttsJump(-3)], ["seekforward", () => ttsJump(3)]]
+    .forEach(([a, f]) => { try{ navigator.mediaSession.setActionHandler(a, f); }catch(e){} });
+}
+
+/* ===== Ketuk dua kali: mulai TTS dari kalimat yang diketuk ===== */
+function ttsFrom(x, y){
+  let node, off;
+  if(document.caretPositionFromPoint){ const c = document.caretPositionFromPoint(x, y); if(c){ node = c.offsetNode; off = c.offset; } }
+  else if(document.caretRangeFromPoint){ const c = document.caretRangeFromPoint(x, y); if(c){ node = c.startContainer; off = c.startOffset; } }
+  if(!node) return;
+  const sec = (node.nodeType === 1 ? node : node.parentNode).closest(".ch"); if(!sec) return;
+  const list = sentencesOf(sec), cmp = s => { try{ return s.range.comparePoint(node, off); }catch(e){ return 9; } };
+  let k = list.findIndex(s => cmp(s) === 0);
+  if(k < 0) k = list.findIndex(s => cmp(s) < 0);   // ketukan di spasi antar kalimat: mulai dari kalimat berikutnya
+  if(k < 0) return;
+  if(AS.on) asStop();
+  T.tok++; speechSynthesis.cancel(); T.sec = sec; T.list = list; T.i = k; T.on = true;
+  ttsUI(); $("tts").classList.add("on"); say();
+}
+let lastTap = {t:0, x:0, y:0};
+$("doc").addEventListener("click", e => {
+  const now = Date.now(), dbl = now - lastTap.t < 350 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30;
+  lastTap = {t:now, x:e.clientX, y:e.clientY};
+  if(!dbl || !TTS_OK || e.target.closest("mark,a,button,input,textarea")) return;
+  lastTap.t = 0; getSelection().removeAllRanges(); ttsFrom(e.clientX, e.clientY);
+});
+
+/* ===== Auto-scroll ===== */
+const AS = {on:false, hold:false, acc:0, last:0};
+let wl = null;
+async function awake(on){   // layar tetap menyala selama TTS atau auto-scroll
+  try{
+    if(on && !wl && navigator.wakeLock) wl = await navigator.wakeLock.request("screen");
+    else if(!on && wl){ wl.release(); wl = null; }
+  }catch(e){ wl = null; }
+}
+function asUI(){ $("aplay").innerHTML = AS.on ? ICON_PAUSE : ICON_PLAY; }
+function asLoop(t){
+  if(!AS.on) return;
+  const dt = Math.min(.1, (t - AS.last) / 1000); AS.last = t;
+  if(!AS.hold){
+    AS.acc += S.asp * 8 * dt;
+    const px = Math.floor(AS.acc);
+    if(px > 0){ window.scrollBy(0, px); AS.acc -= px; }
+    const atEnd = innerHeight + scrollY >= document.documentElement.scrollHeight - 2, last = chs[chs.length - 1];
+    if(atEnd && !busy && !(S.mode === "infinite" && S.auto && last && last.next && !failed)){ asStop(); return; }
+  }
+  requestAnimationFrame(asLoop);
+}
+function asStart(){
+  if(T.on) ttsPause();
+  AS.on = true; AS.acc = 0; AS.last = performance.now(); asUI(); awake(true);
+  $("bar").classList.add("hide"); requestAnimationFrame(asLoop);
+}
+function asStop(){ AS.on = false; asUI(); awake(T.on); }
+$("bauto").onclick = () => { $("tts").classList.remove("on"); $("asbar").classList.toggle("on"); };
+$("aplay").onclick = () => AS.on ? asStop() : asStart();
+$("aspd").value = S.asp; $("asv").textContent = S.asp;
+$("aspd").oninput = e => { S.asp = +e.target.value; $("asv").textContent = S.asp; applySettings(); };
+/* Sentuhan manual menjeda sebentar agar tidak berebut dengan scroll otomatis */
+let holdT;
+addEventListener("pointerdown", () => { clearTimeout(holdT); AS.hold = true; }, {passive:true});
+["pointerup", "pointercancel"].forEach(ev => addEventListener(ev, () => { clearTimeout(holdT); holdT = setTimeout(() => { AS.hold = false; }, 800); }, {passive:true}));
+
+/* ===== Bantuan: kode Cloudflare Worker ===== */
+const WORKER = `export default {
+  async fetch(req){
+    const cors = {"Access-Control-Allow-Origin":"*"};
+    if(req.method === "OPTIONS") return new Response(null, {headers:cors});
+    const t = new URL(req.url).searchParams.get("url");
+    if(!/^https?:\\/\\//.test(t || "")) return new Response("url?", {status:400, headers:cors});
+    const r = await fetch(t, {headers:{"User-Agent":"Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36", "Accept-Language":"en"}});
+    const h = new Headers(r.headers); h.set("Access-Control-Allow-Origin", "*");
+    h.delete("content-security-policy");
+    return new Response(r.body, {status:r.status, headers:h});
+  }
+}`;
+$("wk").textContent = WORKER;
+$("wkc").onclick = () => { try{ navigator.clipboard.writeText(WORKER); $("wkc").textContent = "Tersalin"; }catch(e){} };
+
+/* ===== Event ===== */
+$("read").onclick = () => start($("url").value);
+$("url").addEventListener("keydown", e => { if(e.key === "Enter") start($("url").value); });
+function siteHost(){ return host(curEl && /^https?:/.test(curEl.dataset.url) ? curEl.dataset.url : $("url").value); }
+$("cfg").onclick = () => {
+  const hs = siteHost();
+  $("sel").value = hs ? (S.sel[hs] || "") : ""; $("sel").disabled = !hs;
+  $("selsite").textContent = hs ? "Berlaku untuk situs " + hs + ". Kosongkan bila tombol Next sudah terdeteksi otomatis." : "Buka satu bab dulu untuk mengatur selector situsnya.";
+  $("sheet").classList.add("on");
+};
+$("close").onclick = () => $("sheet").classList.remove("on");
+$("sheet").addEventListener("click", e => { if(e.target === $("sheet")) $("sheet").classList.remove("on"); });
+$("mode").onchange = e => { S.mode = e.target.value; applySettings(); if(chs.length) renderTail(); };
+$("auto").onchange = e => { S.auto = e.target.checked; applySettings(); if(chs.length) renderTail(); };
+$("pre").oninput = e => { S.pre = +e.target.value; applySettings(); };
+$("delay").oninput = e => { S.delay = +e.target.value; applySettings(); };
+$("goal").oninput = e => { S.goal = +e.target.value; applySettings(); };
+$("sel").onchange = e => {
+  const h = siteHost(); if(!h) return;
+  if(e.target.value.trim()) S.sel[h] = e.target.value.trim(); else delete S.sel[h];
+  applySettings();
+};
+$("mode").value = S.mode; $("auto").checked = S.auto; $("pre").value = S.pre; $("delay").value = S.delay; $("goal").value = S.goal;
+
+/* Ketuk tengah layar: tampil/sembunyi toolbar */
+let barTap = 0;
+document.addEventListener("click", e => {
+  if(e.target.closest(".bar,.sheet,#home,button,a,textarea,input")) return;
+  const nt = Date.now(); if(nt - barTap < 350){ barTap = 0; return; } barTap = nt;   // ketuk dua kali tidak menggeser toolbar dua kali
+  const x = e.clientX / innerWidth, y = e.clientY / innerHeight;
+  if(x > .25 && x < .75 && y > .25 && y < .75) $("bar").classList.toggle("hide");
+});
+addEventListener("scroll", onScroll, {passive:true});
+
+/* Mode halaman: geser kiri di akhir bab = berikutnya, geser kanan di awal = sebelumnya */
+let tx = null, ty = 0;
+addEventListener("touchstart", e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, {passive:true});
+addEventListener("touchend", e => {
+  if(S.mode !== "halaman" || tx === null || !chs.length) return;
+  const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty; tx = null;
+  if(Math.abs(dx) < 80 || Math.abs(dy) > 60) return;
+  const nx = chs[0].next;
+  if(dx < 0 && nx && innerHeight + scrollY >= document.documentElement.scrollHeight - 40){ trail.push(nx); openChapter(nx); }
+  else if(dx > 0 && scrollY < 40 && trail.length > 1){ trail.pop(); openChapter(trail[trail.length - 1]); }
+}, {passive:true});
+
+/* ===== Statistik baca (kunci stats, v1) ===== */
+const dayKey = t => { const d = new Date(t || Date.now()); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+let stats = Object.assign({v:1, days:{}}, store.get("stats", {}));
+stats.nov = stats.nov || {};
+function sday(){ const k = dayKey(); return stats.days[k] || (stats.days[k] = {s:0, c:0, u:[]}); }
+function countCh(url){
+  const d = sday(); d.u = d.u || []; if(d.u.includes(url)) return;
+  d.u.push(url); d.c++;
+  for(const k in stats.days) if(k !== dayKey()) delete stats.days[k].u;
+  store.set("stats", stats);
+}
+let lastAct = Date.now();
+["scroll", "pointerdown", "keydown"].forEach(ev => addEventListener(ev, () => { lastAct = Date.now(); }, {passive:true}));
+setInterval(() => {   // hitung waktu baca aktif tiap 5 detik
+  if(document.hidden || !chs.length || $("home").classList.contains("on")) return;
+  if(Date.now() - lastAct < 60000 || T.on || AS.on){ sday().s += 5; if(curEl && /^(https?:|book:)/.test(curEl.dataset.url)){ const nk = novelKey(curEl.dataset.url); stats.nov[nk] = (stats.nov[nk] || 0) + 5; } store.set("stats", stats); }
+}, 5000);
+const weekSecs = () => Array.from({length:7}, (_, i) => (stats.days[dayKey(Date.now() - (6 - i) * 864e5)] || {s:0}).s);
+function streak(){
+  const ok = i => ((stats.days[dayKey(Date.now() - i * 864e5)] || {}).s || 0) >= 60;
+  let i = ok(0) ? 0 : 1, n = 0; while(ok(i)){ n++; i++; } return n;
+}
+const mins = s => s < 3600 ? [Math.round(s / 60), "mnt"] : [(s / 3600).toFixed(1), "jam"];
+
+/* ===== Beranda ===== */
+function ring(p){
+  return '<svg class="ring" viewBox="0 0 36 36" role="img" aria-label="Progres ' + p + ' persen"><circle cx="18" cy="18" r="15" stroke="#ffffff33" stroke-width="3.4"/><circle class="v" cx="18" cy="18" r="15" stroke="#22d3d0" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="' + (p * .9425).toFixed(1) + ' 94.2" transform="rotate(-90 18 18)"/><text x="18" y="21" text-anchor="middle" font-size="8" font-weight="700" fill="#fff" stroke="none">' + p + '%</text></svg>';
+}
+function spark(v){
+  const mx = Math.max(60, ...v), d = v.map((y, i) => (i ? "L" : "M") + (i * 20) + " " + (33 - y / mx * 28).toFixed(1)).join("");
+  return '<svg class="spark" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true"><path d="' + d + 'L120 36L0 36Z" fill="currentColor" opacity=".18" stroke="none"/><path d="' + d + '" stroke="currentColor"/></svg>';
+}
+const hideHome = () => $("home").classList.remove("on");
+function toast(m, label, fn){
+  const t = $("toast"); t.textContent = m; t.classList.toggle("act", !!label);
+  if(label){ const b = h("button", "btn btn-g", label); b.onclick = () => { fn(); t.classList.remove("on"); }; t.append(b); }
+  t.classList.add("on"); clearTimeout(t.k); t.k = setTimeout(() => t.classList.remove("on"), label ? 6000 : 2600);
+}
+function resume(n){ hideHome(); if(!(curEl && curEl.dataset.url === n.url)) start(n.url, n.off); }
+function showHome(){ homeView = "beranda"; renderHome(); $("home").classList.add("on"); $("bar").classList.remove("hide"); }
+let homeView = "beranda";
+function setView(v){ homeView = v; renderHome(); }
+function pnav(box){
+  const n = h("nav", "pnav"); n.setAttribute("aria-label", "Navigasi utama");
+  [["Beranda", () => setView("beranda"), homeView === "beranda"], ["Library", () => { renderLib(); $("lsheet").classList.add("on"); }, 0],
+   ["Statistik", () => setView("statistik"), homeView === "statistik"], ["Pengaturan", () => $("cfg").click(), 0]].forEach(([t, f, on]) => {
+    const b = h("button", "pill" + (on ? " on" : ""), t); if(on) b.setAttribute("aria-current", "page"); b.onclick = f; n.appendChild(b);
+  });
+  box.appendChild(n);
+}
+const NS = "http://www.w3.org/2000/svg", HARI = ["M", "S", "S", "R", "K", "J", "S"];
+function renderStats(box){
+  const g = h("div", "hgrid"); box.appendChild(g);
+  const days = Array.from({length:14}, (_, i) => { const t = Date.now() - (13 - i) * 864e5, d = stats.days[dayKey(t)] || {}; return {t, s:d.s || 0, c:d.c || 0}; });
+  const wk = days.slice(7), tot = wk.reduce((a, x) => a + x.s, 0), chap = wk.reduce((a, x) => a + x.c, 0), tm = mins(tot);
+  const G = S.goal * 60, mx = Math.max(G, ...days.map(x => x.s));
+  const hero = h("section", "card card-hero wide"), big = h("div", "big", String(tm[0]));
+  big.appendChild(h("small", "", " " + tm[1] + " dalam 7 hari"));
+  hero.append(h("div", "lbl", "Ringkasan minggu ini"), big, h("small", "", chap + " bab dibaca · streak " + streak() + " hari"));
+  const bc = h("section", "card"); bc.appendChild(h("h3", "", "Waktu baca harian"));
+  let bars = "";
+  wk.forEach((x, i) => { const ht = x.s / mx * 84, last = i === 6;
+    bars += '<rect x="' + (i * 40 + 8) + '" y="' + (96 - ht).toFixed(1) + '" width="24" height="' + Math.max(2, ht).toFixed(1) + '" rx="6" fill="var(' + (last ? "--bl" : "--cy") + ')"/><text x="' + (i * 40 + 20) + '" y="112" text-anchor="middle" fill="currentColor">' + HARI[new Date(x.t).getDay()] + "</text>"; });
+  const sv = document.createElementNS(NS, "svg"); sv.setAttribute("viewBox", "0 0 280 120"); sv.setAttribute("class", "chart bars"); sv.setAttribute("role", "img");
+  sv.setAttribute("aria-label", "Grafik batang waktu baca 7 hari: " + wk.map(x => HARI[new Date(x.t).getDay()] + " " + Math.round(x.s / 60) + " menit").join(", ")); sv.innerHTML = bars; bc.appendChild(sv);
+  const dc = h("section", "card"), p = Math.min(100, Math.round(days[13].s / G * 100)), row = h("div", "hrow"), tx = h("div"), rg = h("div", "ringw");
+  dc.appendChild(h("h3", "", "Target harian"));
+  tx.append(h("b", "", p + "% tercapai"), h("small", "", "Target " + S.goal + " menit per hari"));
+  rg.innerHTML = '<svg class="ring" viewBox="0 0 36 36" role="img" aria-label="Target harian ' + p + ' persen"><circle cx="18" cy="18" r="15" stroke="var(--cb)" stroke-width="3.4"/><circle class="v" cx="18" cy="18" r="15" stroke="var(--cy)" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="' + (p * .9425).toFixed(1) + ' 94.2" transform="rotate(-90 18 18)"/><text x="18" y="21" text-anchor="middle" font-size="8" font-weight="700" fill="currentColor" stroke="none">' + p + '%</text></svg>';
+  row.append(tx, rg); dc.appendChild(row);
+  const tc = h("section", "card wide"); tc.appendChild(h("h3", "", "Tren 14 hari"));
+  const pts = days.map((x, i) => [i * 280 / 13 + 0, 100 - x.s / mx * 90]);
+  const ls = document.createElementNS(NS, "svg"); ls.setAttribute("viewBox", "0 -4 280 120"); ls.setAttribute("class", "chart"); ls.setAttribute("role", "img"); ls.setAttribute("aria-label", "Grafik garis waktu baca 14 hari, menit per hari: " + days.map(x => Math.round(x.s / 60)).join(", "));
+  ls.innerHTML = '<path d="' + pts.map((q, i) => (i ? "L" : "M") + q[0].toFixed(1) + " " + q[1].toFixed(1)).join("") + '" fill="none" stroke="var(--cy)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+    pts.map(q => '<circle cx="' + q[0].toFixed(1) + '" cy="' + q[1].toFixed(1) + '" r="3" fill="var(--bl)"/>').join("");
+  tc.appendChild(ls);
+  const nc = h("section", "card wide"); nc.appendChild(h("h3", "", "Novel teratas"));
+  const top = Object.values(lib).sort((a, b) => (stats.nov[b.key] || 0) - (stats.nov[a.key] || 0) || (b.prog || 0) - (a.prog || 0)).slice(0, 3);
+  if(!top.length) nc.appendChild(h("small", "", "Belum ada novel. Buka satu bab dari Beranda untuk memulai."));
+  top.forEach(x => {
+    const r = h("button", "lrow"), cv = h("div", "mc"), inf = h("div"), pb = h("div", "pbar"), bi = h("i"), pc = Math.round((x.prog || 0) * 100);
+    cv.style.background = "linear-gradient(135deg,hsl(" + x.hue + " 45% 38%),hsl(" + (x.hue + 40) + " 50% 20%))"; bi.style.width = pc + "%"; pb.appendChild(bi);
+    const tt = mins(stats.nov[x.key] || 0); inf.append(h("b", "", x.title), h("small", "", x.site + " · " + pc + "% · " + tt[0] + " " + tt[1]), pb); r.append(cv, inf); r.onclick = () => resume(x); nc.appendChild(r);
+  });
+  g.append(hero, bc, dc, tc, nc);
+}
+function renderHome(){
+  const box = $("home"); box.innerHTML = ""; pnav(box);
+  if(homeView === "statistik") return renderStats(box);
+  const g = h("div", "hgrid"); box.appendChild(g);
+  const items = Object.values(lib).sort((a, b) => b.t - a.t), n = items[0], d = stats.days[dayKey()] || {s:0, c:0};
+  const hero = h("section", "card card-hero wide"); hero.appendChild(h("div", "lbl", "Lanjutkan membaca"));
+  if(n){
+    const row = h("div", "hrow"), tx = h("div"), rg = h("div", "ringw");
+    tx.append(h("h2", "", n.title), h("small", "", n.chTitle || n.site)); rg.innerHTML = ring(Math.round((n.prog || 0) * 100)); row.append(tx, rg);
+    const sp = h("div", "spk"); sp.innerHTML = spark(weekSecs());
+    const b = h("button", "btn btn-p", "Lanjutkan"); b.onclick = () => resume(n);
+    hero.append(row, sp, h("small", "", "Waktu baca 7 hari terakhir"), b);
+  }else hero.append(h("h2", "", "Belum ada bacaan"), h("small", "", "Tempel tautan bab pertama di kartu bawah untuk mulai."));
+  const td = h("section", "card"), m = h("div", "metrics"), mt = mins(d.s); td.appendChild(h("h3", "", "Hari ini"));
+  [["Waktu baca", mt[0], mt[1]], ["Bab", d.c, "bab"], ["Streak", streak(), "hari"]].forEach(x => {
+    const c = h("div"), v = h("div", "big", String(x[1])); v.appendChild(h("small", "", " " + x[2])); c.append(h("div", "lbl", x[0]), v); m.appendChild(c);
+  });
+  td.appendChild(m);
+  const lb = h("section", "card"); lb.appendChild(h("h3", "", "Library"));
+  if(!items.length) lb.appendChild(h("small", "", "Library masih kosong. Novel masuk otomatis saat kamu membuka bab."));
+  items.slice(0, 3).forEach(x => {
+    const r = h("button", "lrow"), cv = h("div", "mc"), inf = h("div"), pb = h("div", "pbar"), bi = h("i"), pc = Math.round((x.prog || 0) * 100);
+    cv.style.background = "linear-gradient(135deg,hsl(" + x.hue + " 45% 38%),hsl(" + (x.hue + 40) + " 50% 20%))";
+    bi.style.width = pc + "%"; pb.appendChild(bi);
+    inf.append(h("b", "", x.title), h("small", "", x.site + " · " + pc + "%"), pb);
+    r.append(cv, inf); r.onclick = () => resume(x); lb.appendChild(r);
+  });
+  const all = h("button", "btn btn-g", "Lihat semua"); all.onclick = () => { renderLib(); $("lsheet").classList.add("on"); }; lb.appendChild(all);
+  const ps = h("section", "card wide"), pr = h("div", "paste"), f = h("input", "field"); ps.appendChild(h("h3", "", "Tempel tautan"));
+  f.type = "url"; f.placeholder = "https://…/bab-1"; f.inputMode = "url"; f.setAttribute("aria-label", "URL bab");
+  const go = () => { let u = f.value.trim(); if(!u) return toast("Tempel tautan bab dulu."); if(!/^https?:\/\//i.test(u)) u = "https://" + u; start(u); };
+  const rd = h("button", "btn btn-p", "Baca"), pc = h("button", "btn btn-s", "Tempel dari clipboard");
+  rd.onclick = go; f.onkeydown = e => { if(e.key === "Enter") go(); };
+  pc.onclick = async () => { try{ f.value = (await navigator.clipboard.readText()).trim(); }catch(e){ toast("Izin clipboard ditolak. Tempel manual."); } };
+  pr.append(f, pc, rd); ps.appendChild(pr);
+  const eb = h("section", "card wide"), ea = h("div", "acts"), eo = h("button", "btn btn-p", "Pilih file ebook"); eo.onclick = () => $("fbook").click(); ea.appendChild(eo);
+  eb.append(h("h3", "", "Buka file ebook"), h("small", "", "EPUB, TXT, Markdown, HTML, FB2, DOCX, atau PDF. File dibaca di perangkat, tidak diunggah."), ea);
+  g.append(hero, td, lb, eb, ps);
+  if(!items.length){
+    const ob = h("section", "card wide"), ol = h("ol", "steps"); ob.appendChild(h("h3", "", "Cara memulai"));
+    ["Tempel tautan bab pertama di kartu di atas, lalu ketuk Baca.", "Ketuk tengah layar untuk menampilkan atau menyembunyikan toolbar.", "Ketuk dua kali pada kalimat untuk mendengarkan lewat TTS.", "Pilih teks untuk menyorot atau mencatat."].forEach(x => ol.appendChild(h("li", "", x)));
+    ob.appendChild(ol); g.appendChild(ob);
+  }
+}
+$("burl").onclick = () => { const b = $("bar"); b.classList.remove("hide"); b.classList.toggle("url"); if(b.classList.contains("url")) $("url").focus(); };
+$("btop").onclick = () => window.scrollTo({top:0, behavior:matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth"});
+$("bcl").onclick = () => {
+  const box = $("clist"); box.innerHTML = "";
+  chs.forEach((c, i) => {
+    const b = h("button", "crow" + (curEl && curEl.dataset.url === c.url ? " cur" : ""), (i + 1) + ". " + (c.title || c.url));
+    b.onclick = () => {
+      $("csheet").classList.remove("on");
+      const sec = [...document.querySelectorAll(".ch")].find(x => x.dataset.url === c.url);
+      if(sec){ ungone(sec); window.scrollTo(0, sec.getBoundingClientRect().top + scrollY); }
+    };
+    box.appendChild(b);
+  });
+  if(!chs.length) box.appendChild(h("p", "empty", "Belum ada bab yang dibuka."));
+  $("csheet").classList.add("on"); savedList(box);
+};
+async function savedList(box){
+  if(!curEl) return;
+  if(isBook(curEl.dataset.url)) return bookToc(box);
+  const k = novelKey(curEl.dataset.url), have = new Set(chs.map(c => c.url)), d = await db(); if(!d) return;
+  const all = await new Promise(res => { const q = d.transaction("ch").objectStore("ch").getAll(); q.onsuccess = () => res(q.result); q.onerror = () => res([]); });
+  const list = all.filter(c => c.url.startsWith(k) && !have.has(c.url)).sort((a, b) => a.url.localeCompare(b.url, undefined, {numeric:true})).slice(0, 300);
+  if(!list.length || box.querySelector(".grp") || !$("csheet").classList.contains("on")) return;
+  box.appendChild(h("div", "grp", "Tersimpan di perangkat (" + list.length + ")"));
+  list.forEach(c => { const b = h("button", "crow", c.title || c.url); b.onclick = () => { $("csheet").classList.remove("on"); start(c.url); }; box.appendChild(b); });
+}
+$("bhome").onclick = () => $("home").classList.contains("on") && chs.length ? hideHome() : showHome();
+
+/* Wake lock hilang saat tab tersembunyi: ambil lagi; tinggi dock untuk posisi tombol mengambang */
+document.addEventListener("visibilitychange", () => { wl = null; if(!document.hidden && (T.on || AS.on)) awake(true); });
+if(window.ResizeObserver){ const dk = document.querySelector(".dock"); new ResizeObserver(() => document.documentElement.style.setProperty("--dockh", dk.offsetHeight + "px")).observe(dk); }
+/* ===== Tahap E: Edge Android ===== */
+/* Tombol Back menutup panel: tiap panel terbuka = satu entri riwayat; kedalaman dicocokkan di popstate */
+const OV = [];
+function ovCheck(el){
+  const on = el.classList.contains("on"), i = OV.indexOf(el);
+  if(on && i < 0){
+    if(el.id === "home" && !chs.length) return;
+    OV.push(el); el._ret = document.activeElement; syncInert();
+    try{ history.pushState({ov:OV.length}, ""); }catch(e){}
+    const p = el.id !== "hsheet" && el.querySelector(".panel"); if(p){ p.tabIndex = -1; p.focus({preventScroll:true}); }
+  }else if(!on && i >= 0){
+    OV.splice(i, 1); syncInert();
+    try{ history.back(); }catch(e){}
+    const r = el._ret; if(r && r.isConnected && r.focus) try{ r.focus({preventScroll:true}); }catch(e){}
+  }
+}
+const ovObs = new MutationObserver(rs => rs.forEach(r => ovCheck(r.target)));
+document.querySelectorAll(".sheet,#home").forEach(el => ovObs.observe(el, {attributes:true, attributeFilter:["class"]}));
+addEventListener("popstate", () => {
+  const d = (history.state && history.state.ov) || 0;
+  while(OV.length > d) OV.pop().classList.remove("on");
+  syncInert();
+  hideFm();
+});
+if(history.state && history.state.ov) try{ history.replaceState(null, ""); }catch(e){}
+/* Focus trap sederhana untuk panel teratas */
+addEventListener("keydown", e => {
+  if(e.key !== "Tab" || !OV.length) return;
+  const el = OV[OV.length - 1], f = [...el.querySelectorAll("button,input,select,textarea,summary,a[href]")].filter(x => !x.disabled && !x.hidden && x.offsetParent !== null);
+  if(!f.length) return;
+  const a = document.activeElement, first = f[0], last = f[f.length - 1];
+  if(!el.contains(a)){ e.preventDefault(); first.focus(); }
+  else if(e.shiftKey && a === first){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey && a === last){ e.preventDefault(); first.focus(); }
+});
+/* Simpan posisi dan statistik saat app disembunyikan/ditutup */
+function flushPos(){ try{ if(curEl && /^(https?:|book:)/.test(curEl.dataset.url)) savePos(curEl); store.set("stats", stats); }catch(e){} }
+document.addEventListener("visibilitychange", () => { if(document.hidden) flushPos(); });
+addEventListener("pagehide", flushPos);
+addEventListener("pageshow", e => { if(e.persisted && T.on) ttsPause(); });
+/* Warna bilah status mengikuti tema */
+function updateThemeColor(){
+  const m = document.querySelector("meta[name=theme-color]"), c = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+  if(m && c) m.content = c;
+}
+matchMedia("(prefers-color-scheme:dark)").addEventListener("change", updateThemeColor);
+/* Cache: batas 400 bab (yang terlama dibuang), minta penyimpanan persisten */
+const CACHE_MAX = 400;
+async function cachePrune(){
+  const d = await db(); if(!d) return;
+  const all = await new Promise(res => { const q = d.transaction("ch").objectStore("ch").getAll(); q.onsuccess = () => res(q.result.filter(c => !isBook(c.url)).map(c => ({url:c.url, t:c.t || 0}))); q.onerror = () => res([]); });
+  if(all.length <= CACHE_MAX) return;
+  all.sort((a, b) => a.t - b.t);
+  const st = d.transaction("ch", "readwrite").objectStore("ch"); all.slice(0, all.length - CACHE_MAX).forEach(c => st.delete(c.url));
+}
+try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+setTimeout(cachePrune, 8000);
+/* ===== Tahap 8: aksesibilitas ===== */
+/* Latar di belakang panel dibuat inert agar fokus dan pembaca layar tidak "bocor" */
+function syncInert(){
+  const top = OV[OV.length - 1], sheet = OV.some(el => el.classList.contains("sheet"));
+  ["main", "bar", "fabs", "home"].forEach(id => { $(id).inert = sheet; });
+  document.querySelector(".dock").inert = sheet;
+  document.querySelectorAll(".sheet").forEach(s => { s.inert = OV.includes(s) && s !== top; });
+}
+/* Label untuk kontrol di baris pengaturan, status tombol toggle */
+document.querySelectorAll(".row").forEach(r => {
+  const sp = r.querySelector(":scope > span"), c = r.querySelector("input,select,textarea");
+  if(sp && c && !c.getAttribute("aria-label")) c.setAttribute("aria-label", sp.textContent.trim());
+});
+[...$("lseg").children].forEach(x => x.setAttribute("aria-pressed", String(x.classList.contains("on"))));
+const watch = (el, fn) => { new MutationObserver(fn).observe(el, {attributes:true, attributeFilter:["class"]}); fn(); };
+watch($("bar"), () => $("burl").setAttribute("aria-expanded", String($("bar").classList.contains("url"))));
+watch($("tts"), () => $("btts").setAttribute("aria-expanded", String($("tts").classList.contains("on"))));
+watch($("asbar"), () => $("bauto").setAttribute("aria-expanded", String($("asbar").classList.contains("on"))));
+/* ===== Pembaca ebook lokal: EPUB, TXT, Markdown, HTML, FB2, DOCX, PDF ===== */
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const PDFJS = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+const HEAD_RE = /^(?:(?:chapter|bab|part|bagian|volume|vol\.?)\s*(?:\d+|[ivxlc]+\b|(?:one|two|three|four|five|six|seven|eight|nine|ten|satu|dua|tiga|empat|lima|enam|tujuh|delapan|sembilan|sepuluh)\b).{0,60}|(?:prolog(?:ue)?|epilog(?:ue)?|prakata)\b.{0,40}|第[0-9零一二三四五六七八九十百千两]+[章节回卷].{0,40})$/i;
+function decodeText(buf){
+  const u = new Uint8Array(buf);
+  if(u[0] === 255 && u[1] === 254) return new TextDecoder("utf-16le").decode(u);
+  if(u[0] === 254 && u[1] === 255) return new TextDecoder("utf-16be").decode(u);
+  try{ return new TextDecoder("utf-8", {fatal:true}).decode(u); }catch(e){ return new TextDecoder("windows-1252").decode(u); }
+}
+async function unzip(buf){
+  const v = new DataView(buf), u8 = new Uint8Array(buf), td = new TextDecoder(), files = {};
+  let e = u8.length - 22; while(e >= 0 && v.getUint32(e, true) !== 0x06054b50) e--;
+  if(e < 0) throw new Error("File ZIP rusak.");
+  let n = v.getUint16(e + 10, true), p = v.getUint32(e + 16, true);
+  while(n--){
+    const nl = v.getUint16(p + 28, true), xl = v.getUint16(p + 30, true), cl = v.getUint16(p + 32, true);
+    files[td.decode(u8.subarray(p + 46, p + 46 + nl))] = {m:v.getUint16(p + 10, true), cs:v.getUint32(p + 20, true), lo:v.getUint32(p + 42, true)};
+    p += 46 + nl + xl + cl;
+  }
+  const get = async name => {
+    const f = files[name]; if(!f) return null;
+    const s = f.lo + 30 + v.getUint16(f.lo + 26, true) + v.getUint16(f.lo + 28, true), raw = u8.subarray(s, s + f.cs);
+    if(f.m === 0) return raw;
+    if(f.m !== 8) throw new Error("Kompresi ZIP tidak didukung.");
+    return new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer());
+  };
+  return {get, text: async n => { const d = await get(n); return d ? td.decode(d) : null; }};
+}
+function fin(html){
+  const b = new DOMParser().parseFromString(clean(html), "text/html").body;
+  b.querySelectorAll("img").forEach(i => { if(!/^data:/.test(i.getAttribute("src") || "")) i.remove(); });
+  return b.innerHTML;
+}
+function pack(t, ps, out){   // pecah bagian terlalu panjang menjadi beberapa bab
+  const total = ps.reduce((a, x) => a + x.length, 0); let g = [], len = 0, k = 1;
+  const push = () => { if(g.length){ out.push({t:k > 1 ? t + " (" + k + ")" : t, h:g.join("")}); k++; g = []; len = 0; } };
+  for(const x of ps){ g.push(x); len += x.length; if(total > 45000 && len > 30000) push(); }
+  push();
+}
+/* TXT */
+function txtBook(buf, title){
+  const L = decodeText(buf).replace(/\r\n?/g, "\n").split("\n"), blank = L.filter(x => !x.trim()).length > L.length * .25, out = [];
+  let t = title, ps = [], buf2 = [];
+  const fl = () => { if(buf2.length){ ps.push("<p>" + esc(buf2.join(" ")) + "</p>"); buf2 = []; } };
+  const dn = () => { fl(); if(ps.length) pack(t, ps, out); ps = []; };
+  for(const l of L){
+    const s = l.trim();
+    if(s && s.length < 80 && HEAD_RE.test(s)){ dn(); t = s; }
+    else if(!s) fl(); else{ buf2.push(s); if(!blank) fl(); }
+  }
+  dn(); return {title, ch:out};
+}
+/* Markdown */
+const mdIn = s => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*|__([^_]+)__/g, (m, a, b) => "<b>" + (a || b) + "</b>")
+  .replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<i>$2</i>").replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, "<a href=\"$2\">$1</a>");
+function mdBook(buf, title){
+  const L = decodeText(buf).replace(/\r\n?/g, "\n").split("\n"), out = []; let t = title, ps = [], para = [], li = [], code = null;
+  const fp = () => {
+    if(para.length){ ps.push("<p>" + mdIn(para.join(" ")) + "</p>"); para = []; }
+    if(li.length){ ps.push("<ul>" + li.map(x => "<li>" + mdIn(x) + "</li>").join("") + "</ul>"); li = []; }
+  };
+  const dn = () => { fp(); if(ps.length) pack(t, ps, out); ps = []; };
+  for(const l of L){
+    if(/^\s*```/.test(l)){ if(code){ ps.push("<pre>" + esc(code.join("\n")) + "</pre>"); code = null; }else{ fp(); code = []; } continue; }
+    if(code){ code.push(l); continue; }
+    let m;
+    if((m = l.match(/^(#{1,6})\s+(.*?)\s*#*$/))){ if(m[1].length < 3){ dn(); t = m[2]; }else{ fp(); ps.push("<h3>" + mdIn(m[2]) + "</h3>"); } }
+    else if(/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(l)){ fp(); ps.push("<hr>"); }
+    else if((m = l.match(/^\s*(?:[-*+]|\d+[.)])\s+(.*)/))){ if(para.length) fp(); li.push(m[1]); }
+    else if((m = l.match(/^>\s?(.*)/))){ fp(); ps.push("<blockquote>" + mdIn(m[1]) + "</blockquote>"); }
+    else if(!l.trim()) fp();
+    else{ if(li.length) fp(); para.push(l.trim()); }
+  }
+  dn(); return {title, ch:out};
+}
+/* HTML / XHTML: dipecah per judul h1/h2 */
+function htmlBook(buf, title){
+  const d = new DOMParser().parseFromString(decodeText(buf), "text/html"), out = [];
+  d.querySelectorAll("script,style,nav,iframe").forEach(x => x.remove());
+  const t = (d.title || title).trim();
+  d.body.innerHTML.split(/(?=<h[12][\s>])/i).forEach((p, i) => {
+    const m = p.match(/^<h[12][^>]*>([\s\S]*?)<\/h[12]>/i), ct = m ? m[1].replace(/<[^>]*>/g, "").trim() : "";
+    out.push({t:ct || (i ? "Bagian " + (i + 1) : t), h:m ? p.slice(m[0].length) : p});
+  });
+  return {title:t, ch:out};
+}
+/* FB2 */
+function fb2Book(buf, title){
+  const d = new DOMParser().parseFromString(decodeText(buf), "application/xml"), out = [];
+  if(d.querySelector("parsererror")) throw new Error("File FB2 tidak valid.");
+  const sec = (s, ps) => { for(const c of s.children){ const n = c.localName;
+    if(n === "title" || n === "subtitle") ps.push("<h3>" + esc(c.textContent.trim()) + "</h3>");
+    else if(n === "p" || n === "v") ps.push("<p>" + esc(c.textContent) + "</p>");
+    else if(n === "empty-line") ps.push("<p>&nbsp;</p>");
+    else if(/^(section|epigraph|cite|poem|stanza)$/.test(n)) sec(c, ps); } };
+  d.querySelectorAll("body:not([name=notes]) > section").forEach((s, i) => {
+    const ti = s.querySelector(":scope > title"), ps = [];
+    const t = ti ? ([...ti.children].map(x => x.textContent.trim()).join(" ") || ti.textContent.trim()) : "Bagian " + (i + 1);
+    if(ti) ti.remove(); sec(s, ps); pack(t, ps, out);
+  });
+  if(!out.length){ const ps = [], b = d.querySelector("body"); if(b) sec(b, ps); pack(title, ps, out); }
+  const bt = d.querySelector("book-title"), au = d.querySelector("author");
+  return {title:bt ? bt.textContent.trim() : title, author:au ? au.textContent.trim().replace(/\s+/g, " ") : "", ch:out};
+}
+/* DOCX: judul (Heading 1/2, Title) memulai bab baru */
+async function docxBook(buf, title){
+  const z = await unzip(buf), x = await z.text("word/document.xml"); if(!x) throw new Error("File DOCX tidak valid.");
+  const d = new DOMParser().parseFromString(x, "application/xml"), out = []; let t = title, ps = [];
+  const dn = () => { if(ps.length) pack(t, ps, out); ps = []; };
+  for(const p of d.getElementsByTagNameNS("*", "p")){
+    const st = p.getElementsByTagNameNS("*", "pStyle")[0], sv = st ? st.getAttribute("w:val") || "" : "";
+    const s = [...p.getElementsByTagNameNS("*", "t")].map(n => n.textContent).join("").trim(); if(!s) continue;
+    if(/^(heading1|heading2|title|judul1|judul2)$/i.test(sv)){ dn(); t = s; } else ps.push("<p>" + esc(s) + "</p>");
+  }
+  dn(); return {title, ch:out};
+}
+/* PDF: teks diekstrak per 10 halaman (pdf.js dimuat dari CDN saat dibutuhkan) */
+async function pdfBook(buf, title){
+  if(!window.pdfjsLib){
+    await new Promise((ok, no) => { const s = document.createElement("script"); s.src = PDFJS + "pdf.min.js"; s.onload = ok;
+      s.onerror = () => no(new Error("PDF.js gagal dimuat. Sambungkan internet untuk membuka PDF.")); document.head.appendChild(s); });
+    pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + "pdf.worker.min.js";
+  }
+  const pdf = await pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise, N = pdf.numPages, out = []; let ps = [], a = 1;
+  for(let i = 1; i <= N; i++){
+    const tc = await (await pdf.getPage(i)).getTextContent(), L = []; let ln = "", y = null;
+    for(const it of tc.items){ const yy = it.transform[5]; if(y !== null && Math.abs(yy - y) > 3){ L.push(ln); ln = ""; } ln += it.str; y = yy; }
+    L.push(ln);
+    const mx = Math.max(...L.map(q => q.trim().length), 1); let p = "";
+    for(let q of L){
+      q = q.trim(); if(!q) continue;
+      p = /\w-$/.test(p) ? p.slice(0, -1) + q : (p ? p + " " : "") + q;
+      if(q.length < mx * .7 && /[.!?:"”)]$/.test(q)){ ps.push("<p>" + esc(p) + "</p>"); p = ""; }
+    }
+    if(p) ps.push("<p>" + esc(p) + "</p>");
+    if(i % 10 === 0 || i === N){ if(ps.length) pack("Halaman " + a + "–" + i, ps, out); ps = []; a = i + 1; }
+    if(i % 5 === 0) bkp("Membaca PDF", .1 + .8 * i / N, "Halaman " + i + " dari " + N);
+  }
+  if(!out.length) throw new Error("PDF ini tidak berisi teks (mungkin hasil scan).");
+  return {title, ch:out};
+}
+/* EPUB: spine, daftar isi (nav/NCX), gambar disematkan sebagai data URL */
+const rp = (base, href) => { try{ return decodeURIComponent(new URL(href, "http://x/" + base).pathname.slice(1)); }catch(e){ return href; } };
+const MIME = {png:"image/png", jpg:"image/jpeg", jpeg:"image/jpeg", gif:"image/gif", webp:"image/webp", svg:"image/svg+xml"};
+async function imgData(z, path){
+  const m = MIME[path.split(".").pop().toLowerCase()], d = m && await z.get(path); if(!d || d.length > 1.5e6) return null;
+  let s = ""; for(let i = 0; i < d.length; i += 32768) s += String.fromCharCode.apply(null, d.subarray(i, i + 32768));
+  return "data:" + m + ";base64," + btoa(s);
+}
+async function thumb(url){ try{ const b = await createImageBitmap(await (await fetch(url)).blob()), c = document.createElement("canvas"); c.width = 140; c.height = Math.round(b.height * 140 / b.width); c.getContext("2d").drawImage(b, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", .7); }catch(e){ return ""; } }
+async function epubBook(buf, title){
+  const z = await unzip(buf), P = new DOMParser(), xml = s => P.parseFromString(s || "<x/>", "application/xml");
+  const cn = await z.text("META-INF/container.xml"), rf = cn && xml(cn).querySelector("rootfile"); if(!rf) throw new Error("File EPUB tidak valid.");
+  const op = rf.getAttribute("full-path"), opf = xml(await z.text(op)), dir = op.replace(/[^/]*$/, ""), man = {}, toc = new Map();
+  opf.querySelectorAll("manifest > item").forEach(i => { man[i.getAttribute("id")] = {h:i.getAttribute("href"), t:i.getAttribute("media-type") || "", p:i.getAttribute("properties") || ""}; });
+  const dc = n => { const e = opf.getElementsByTagNameNS("*", n)[0]; return e ? e.textContent.trim() : ""; };
+  const nav = Object.values(man).find(i => /\bnav\b/.test(i.p)), ncx = Object.values(man).find(i => /ncx/.test(i.t));
+  try{
+    if(nav){
+      const np = rp(dir, nav.h), nd = P.parseFromString(await z.text(np) || "", "text/html");
+      (nd.querySelector("nav[epub\\:type=toc]") || nd.querySelector("nav") || nd).querySelectorAll("a[href]").forEach(a => { const k = rp(np, a.getAttribute("href")); if(!toc.has(k)) toc.set(k, a.textContent.trim().replace(/\s+/g, " ")); });
+    }else if(ncx){
+      const np = rp(dir, ncx.h); xml(await z.text(np)).querySelectorAll("navPoint").forEach(p => {
+        const c = p.querySelector("content"), t = p.querySelector("navLabel > text");
+        if(c && t){ const k = rp(np, c.getAttribute("src")); if(!toc.has(k)) toc.set(k, t.textContent.trim()); } });
+    }
+  }catch(e){}
+  let cover = ""; const cm = opf.querySelector("meta[name=cover]"), ci = Object.values(man).find(i => /cover-image/.test(i.p)) || (cm && man[cm.getAttribute("content")]);
+  if(ci){ const u = await imgData(z, rp(dir, ci.h)); if(u) cover = await thumb(u); }
+  const sp = [...opf.querySelectorAll("spine > itemref")], out = [], norm = s => s.replace(/\s+/g, " ").trim().toLowerCase();
+  for(const ir of sp){
+    bkp("Membaca ebook", .1 + .75 * out.length / sp.length, "Bab " + (out.length + 1) + " dari " + sp.length); if(out.length % 8 === 7) await new Promise(r => setTimeout(r));
+    const it = man[ir.getAttribute("idref")]; if(!it || !/html|xml/.test(it.t)) continue;
+    const path = rp(dir, it.h), raw = await z.text(path); if(!raw) continue;
+    const d = P.parseFromString(raw, "text/html"); d.querySelectorAll("script,style,link,nav").forEach(x => x.remove());
+    for(const im of [...d.querySelectorAll("img,image")]){
+      const s = im.getAttribute("src") || im.getAttribute("href") || im.getAttribute("xlink:href"), u = s && await imgData(z, rp(path, s));
+      if(u){ const n = d.createElement("img"); n.src = u; (im.closest("svg") || im).replaceWith(n); } else im.remove();
+    }
+    const b = d.body; if(!b) continue;
+    const tt = toc.get(path) || "", hd = b.querySelector("h1,h2,h3"), ht = hd ? hd.textContent.trim().replace(/\s+/g, " ") : "";
+    if(hd && ht && b.textContent.trim().startsWith(hd.textContent.trim()) && (!tt || norm(ht).includes(norm(tt)) || norm(tt).includes(norm(ht)))) hd.remove();
+    out.push({t:(tt || ht || "Bagian " + (out.length + 1)).slice(0, 120), h:b.innerHTML});
+  }
+  return {title:dc("title") || title, author:dc("creator"), cover, ch:out};
+}
+const bkEl = document.createElement("div"); bkEl.id = "bkp"; bkEl.hidden = true; bkEl.setAttribute("role", "status"); bkEl.setAttribute("aria-live", "polite");
+bkEl.innerHTML = '<div class="card"><h3></h3><div class="pbar"><i></i></div><small></small></div>'; document.body.appendChild(bkEl);
+const bkSt = document.createElement("style"); bkSt.textContent = "#bkp{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:#0008;padding:24px}#bkp[hidden]{display:none}#bkp .card{width:min(360px,100%)}#bkp .pbar{margin:12px 0 8px}#bkp.drag{outline:3px dashed var(--cy);outline-offset:-14px}"; document.head.appendChild(bkSt);
+function bkp(t, p, sub){ bkEl.hidden = false; bkEl.querySelector("h3").textContent = t; bkEl.querySelector("small").textContent = sub || ""; if(p != null) bkEl.querySelector("i").style.width = Math.round(p * 100) + "%"; }
+const bkHide = () => { bkEl.hidden = true; bkEl.classList.remove("drag"); };
+/* ===== Simpan ke IndexedDB + library, lalu buka ===== */
+const BKF = {epub:epubBook, txt:txtBook, md:mdBook, markdown:mdBook, html:htmlBook, htm:htmlBook, xhtml:htmlBook, fb2:fb2Book, docx:docxBook, pdf:pdfBook};
+const BKL = {epub:"EPUB", txt:"TXT", md:"Markdown", markdown:"Markdown", html:"HTML", htm:"HTML", xhtml:"HTML", fb2:"FB2", docx:"DOCX", pdf:"PDF"};
+async function openBook(file){
+  const ext = (file.name.split(".").pop() || "").toLowerCase(), fn = BKF[ext];
+  if(!fn){ toast(/^(mobi|azw3?|kf8|prc)$/.test(ext) ? "MOBI/AZW belum didukung. Ubah ke EPUB dengan Calibre." : "Format ." + ext + " belum didukung."); return; }
+  bkp("Membuka ebook", .03, file.name);
+  try{
+    const r = await fn(await file.arrayBuffer(), file.name.replace(/\.[^.]+$/, ""));
+    bkp("Menyiapkan bab", .88, file.name);
+    r.ch = r.ch.filter(c => c.h && (c.h.replace(/<[^>]*>/g, "").trim() || /<img/.test(c.h)));
+    if(!r.ch.length) throw new Error("Tidak ada teks yang bisa dibaca di file ini.");
+    const id = "b" + hash(file.name + file.size).toString(36), key = "book:" + id + "/", n = r.ch.length, d = await db();
+    if(!d) throw new Error("Penyimpanan perangkat tidak tersedia.");
+    r.ch.forEach((c, i) => { c.t = (c.t || "").trim() || "Bagian " + (i + 1); });
+    bkp("Menyimpan ke perangkat", .93, n + " bab");
+    await new Promise((ok, no) => {
+      const tx = d.transaction("ch", "readwrite"), st = tx.objectStore("ch");
+      st.put({url:key, meta:true, cover:r.cover || "", title:r.title, toc:r.ch.map(c => c.t), content:"", t:Date.now()});
+      r.ch.forEach((c, i) => st.put({url:key + (i + 1), title:c.t, content:fin(c.h), next:i + 1 < n ? key + (i + 2) : null, t:Date.now()}));
+      tx.oncomplete = ok; tx.onerror = tx.onabort = () => no(new Error("Penyimpanan penuh atau gagal menyimpan."));
+    });
+    if(!lib[key]) lib[key] = {key, title:r.title, site:BKL[ext] + (r.author ? " · " + r.author : ""), hue:hash(id) % 360, fav:false, done:false, tags:["ebook"], prog:0, off:0, url:key + 1, chTitle:r.ch[0].t, t:Date.now(), book:true, total:n};
+    else{ lib[key].t = Date.now(); lib[key].total = n; }
+    store.set("lib", lib); $("lsheet").classList.remove("on");
+    start(lib[key].url, lib[key].off); toast(r.title + " · " + n + " bab");
+  }catch(e){ toast("Gagal membuka: " + e.message); }
+  finally{ bkHide(); }
+}
+async function bookToc(box){   // daftar isi lengkap untuk buku yang sedang dibaca
+  const key = novelKey(curEl.dataset.url), m = await cacheGet(key); if(!m || !m.toc) return;
+  box.innerHTML = ""; box.appendChild(h("div", "grp", m.title + " · " + m.toc.length + " bab"));
+  m.toc.forEach((t, i) => {
+    const u = key + (i + 1), b = h("button", "crow" + (curEl.dataset.url === u ? " cur" : ""), (i + 1) + ". " + t);
+    b.onclick = () => { $("csheet").classList.remove("on"); const s = [...document.querySelectorAll(".ch")].find(x => x.dataset.url === u); if(s){ ungone(s); window.scrollTo(0, s.getBoundingClientRect().top + scrollY); } else start(u); };
+    box.appendChild(b);
+  });
+  const c = box.querySelector(".cur"); if(c) c.scrollIntoView({block:"center"});
+}
+$("fbook").onchange = e => { const f = e.target.files[0]; e.target.value = ""; if(f) openBook(f); };
+$("bbook").onclick = () => $("fbook").click();
+let dg = 0;
+addEventListener("dragenter", e => { if(e.dataTransfer && [...e.dataTransfer.types].includes("Files")){ dg++; bkEl.classList.add("drag"); bkp("Lepaskan file di sini", 0, "EPUB, TXT, MD, HTML, FB2, DOCX, PDF"); } });
+addEventListener("dragleave", () => { if(--dg <= 0){ dg = 0; bkHide(); } });
+addEventListener("dragover", e => e.preventDefault());
+addEventListener("drop", e => { e.preventDefault(); dg = 0; bkHide(); const f = e.dataTransfer && e.dataTransfer.files[0]; if(f) openBook(f); });
+
+/* ===== Suara Microsoft Edge (online, lewat Cloudflare Worker pribadi) ===== */
+const EDGE_URL_DEFAULT = "";   // isi dengan URL Worker agar tidak perlu mengetik di aplikasi
+const EDGE = {au:new Audio(), c:new Map()};
+if(TTS_OK){ const c0 = speechSynthesis.cancel.bind(speechSynthesis); speechSynthesis.cancel = () => { c0(); EDGE.au.pause(); }; }
+function edgeGet(text){
+  const k = S.edgeVoice + "|" + S.rate + "|" + text;
+  if(!EDGE.c.has(k)){
+    const p = fetch(S.edgeUrl.replace(/\/+$/, "") + "/?voice=" + encodeURIComponent(S.edgeVoice) + "&rate=" + Math.round((S.rate - 1) * 100) + "&text=" + encodeURIComponent(text))
+      .then(r => { if(!r.ok) throw new Error("HTTP " + r.status); return r.blob(); }).then(b => URL.createObjectURL(b));
+    EDGE.c.set(k, p); p.catch(() => EDGE.c.delete(k));
+    if(EDGE.c.size > 12){ const f = EDGE.c.keys().next().value; EDGE.c.get(f).then(u => URL.revokeObjectURL(u), () => {}); EDGE.c.delete(f); }
+  }
+  return EDGE.c.get(k);
+}
+function edgeSay(s, my){
+  ttsMark(s.range); ttsInfo();
+  const au = EDGE.au, nx = T.list[T.i + 1];
+  const fail = () => { if(my !== T.tok || !T.on) return; T.edgeOff = true; toast("Suara Edge gagal, memakai suara perangkat."); say(); };
+  edgeGet(s.text).then(u => {
+    if(my !== T.tok || !T.on) return;
+    au.onended = () => { if(my === T.tok && T.on){ T.i++; say(); } };
+    au.onerror = fail; au.src = u; return au.play();
+  }).catch(fail);
+  if(nx) edgeGet(nx.text).catch(() => {});   // siapkan kalimat berikutnya agar tanpa jeda
+}
+function edgeUI(){ $("tedge").hidden = !S.edgeOn; $("tdev").hidden = !!S.edgeOn; $("teng").value = S.edgeOn ? "edge" : "dev"; $("tev").value = S.edgeVoice; $("teu").value = S.edgeUrl; }
+S.edgeVoice = S.edgeVoice || "id-ID-ArdiNeural"; S.edgeUrl = S.edgeUrl || EDGE_URL_DEFAULT; edgeUI();
+$("teng").onchange = e => { S.edgeOn = e.target.value === "edge"; T.edgeOff = false; applySettings(); edgeUI(); if(S.edgeOn && !S.edgeUrl) toast("Isi URL Worker Edge TTS dulu."); };
+$("tev").onchange = e => { S.edgeVoice = e.target.value; applySettings(); };
+$("teu").onchange = e => { S.edgeUrl = e.target.value.trim(); T.edgeOff = false; applySettings(); };
+
+/* ===== Init: lanjutkan bab terakhir (dari cache bila offline) ===== */
+const FMT = {fs:v => v + " px", lh:v => (v / 10).toFixed(1), ps:v => (v / 10).toFixed(1) + " em", w:v => v + " px", mg:v => v + " px", pre:v => v + " bab", delay:v => v + " dtk", goal:v => v + " mnt"};
+function rangeVals(){
+  Object.keys(FMT).forEach(k => {
+    const el = $(k); let o = el.parentNode.querySelector("output.val");
+    if(!o){ const w = h("div", "rng"); el.parentNode.insertBefore(w, el); o = h("output", "val"); w.append(el, o); el.addEventListener("input", () => { o.textContent = FMT[k](el.value); el.setAttribute("aria-valuetext", o.textContent); }); }
+    o.textContent = FMT[k](el.value); el.setAttribute("aria-valuetext", o.textContent);
+  });
+}
+function syncControls(){ buildPanel(); $("mode").value = S.mode; $("auto").checked = S.auto; $("pre").value = S.pre; $("delay").value = S.delay; $("goal").value = S.goal; rangeVals(); }
+const RST_TXT = $("rst").textContent; let rstT;
+$("rst").onclick = () => {   // dua ketukan menggantikan confirm()
+  const b = $("rst");
+  if(!b.dataset.arm){ b.dataset.arm = 1; b.textContent = "Ketuk lagi untuk mengembalikan"; rstT = setTimeout(() => { delete b.dataset.arm; b.textContent = RST_TXT; }, 3500); return; }
+  clearTimeout(rstT); delete b.dataset.arm; b.textContent = RST_TXT;
+  ["theme","fs","ff","lh","ps","w","mg","ta","mode","auto","pre","delay"].forEach(k => { S[k] = DEFAULTS[k]; });
+  applySettings(); syncControls(); if(chs.length) renderTail(); toast("Tampilan dan bacaan dikembalikan ke bawaan.");
+};
+document.querySelectorAll(".sheet .panel").forEach(p => { p.setAttribute("role", "dialog"); p.setAttribute("aria-modal", "true"); const t = p.querySelector("h3"); if(t && !p.getAttribute("aria-label")) p.setAttribute("aria-label", t.firstChild.textContent.trim()); });
+$("lq").setAttribute("aria-label", "Cari judul, situs, atau tag"); $("lsort").setAttribute("aria-label", "Urutkan library");
+addEventListener("keydown", e => { if(e.key === "Escape"){ document.querySelectorAll(".sheet.on").forEach(x => x.classList.remove("on")); hideFm(); } });
+applySettings(); buildPanel(); store.set("schema", 2); rangeVals();
+const lastUrl = store.get("last", ""), pos = store.get("pos", null);
+if(/^(https?:|book:)/.test(lastUrl)){ if(!isBook(lastUrl)) $("url").value = lastUrl; start(lastUrl, pos && pos.url === lastUrl ? pos.off : 0); }
+else showHome();
+</script>
+<script>
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>
