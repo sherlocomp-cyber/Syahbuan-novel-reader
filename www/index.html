@@ -276,7 +276,7 @@ summary{min-height:44px;padding:10px 0}
     <button class="ib tbig" id="tplay" aria-label="Putar"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></button>
     <button class="ib" id="tnext" aria-label="Kalimat berikutnya"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
     <button class="ib" id="tstop" aria-label="Berhenti"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg></button>
-    <div class="tinfo"><b id="ttitle">Bab</b><small id="tpos">Siap · v4</small></div>
+    <div class="tinfo"><b id="ttitle">Bab</b><small id="tpos">Siap · v5</small></div>
     <button class="ib" id="tmore" aria-label="Pengaturan suara" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
   </div>
   <div class="tset" id="tset" hidden>
@@ -1089,7 +1089,7 @@ function loadVoices(){
 function ttsInfo(){
   const n = T.list.length, t = (T.sec && T.sec.dataset.title) || (curEl && curEl.dataset.title) || "Bab";
   $("ttitle").textContent = t;
-  $("tpos").textContent = (n ? (T.i + 1) + " / " + n + " kalimat" + (T.on ? "" : " · jeda") : "Siap · v4") + (T.msg ? " · " + T.msg : "");
+  $("tpos").textContent = (n ? (T.i + 1) + " / " + n + " kalimat" + (T.on ? "" : " · jeda") : "Siap · v5") + (T.msg ? " · " + T.msg : "");
   $("tprog").style.transform = "scaleX(" + (n ? Math.min(1, (T.i + 1) / n) : 0).toFixed(3) + ")";
 }
 if(!TTS_OK) $("btts").hidden = true;
@@ -1765,7 +1765,7 @@ function edgeSay(s, my){
 }
 function edgeUI(){ $("tedge").hidden = !S.edgeOn; $("tdev").hidden = !!S.edgeOn || !!NM; $("teng").value = S.edgeOn ? "edge" : "dev"; $("tev").value = S.edgeVoice; $("teu").value = S.edgeUrl; }
 S.edgeVoice = S.edgeVoice || "id-ID-ArdiNeural"; S.edgeUrl = S.edgeUrl || EDGE_URL_DEFAULT;
-if(S.edgeOn === undefined && S.edgeUrl) S.edgeOn = true;   // suara Edge jadi default
+if(!S.v5){ S.edgeOn = false; S.v5 = 1; applySettings(); }   // v5: suara perangkat jadi default
 edgeUI();
 $("teng").onchange = e => { S.edgeOn = e.target.value === "edge"; T.edgeOff = false; applySettings(); edgeUI(); if(S.edgeOn && !S.edgeUrl) toast("Isi URL Worker Edge TTS dulu."); };
 $("tev").onchange = e => { S.edgeVoice = e.target.value; applySettings(); };
@@ -1788,6 +1788,7 @@ async function mediaSync(){
 function mediaChk(){ if(NM && T.sec && (T.sec.dataset.title || "") !== mediaT) mediaSync(); }
 function nativeSay(s, my){
   T.msg = "Perangkat memulai…"; ttsMark(s.range); ttsInfo(); mediaChk();
+  clearTimeout(T.wd); T.wd = setTimeout(() => { if(my === T.tok && T.on && T.msg === "Perangkat memulai…") toast("Belum ada suara dari mesin HP. Cek volume media, atau pasang Google Speech Services."); }, 6000);
   NM.speak({text:s.text, lang:detectLang(s.text), rate:S.rate, id:String(my)}).catch(e => {
     if(my === T.tok && T.on){ T.on = false; T.msg = ""; ttsUI(); toast("TTS perangkat gagal: " + ((e && e.message) || e)); }
   });

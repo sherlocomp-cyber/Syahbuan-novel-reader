@@ -20,9 +20,12 @@ public class MediaPlugin extends Plugin {
   private TextToSpeech tts;
   private boolean ready = false;
 
-  @Override
-  public void load() {
-    tts = new TextToSpeech(getContext(), status -> {
+  private int initStatus = -999;
+  private boolean triedGoogle = false;
+
+  private void initTts(String engine) {
+    TextToSpeech.OnInitListener l = status -> {
+      initStatus = status;
       ready = status == TextToSpeech.SUCCESS;
       if (ready) {
         tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
@@ -30,8 +33,18 @@ public class MediaPlugin extends Plugin {
           @Override public void onDone(String id) { JSObject o = new JSObject(); o.put("id", id); notifyListeners("ttsDone", o); }
           @Override public void onError(String id) { JSObject o = new JSObject(); o.put("id", id); notifyListeners("ttsError", o); }
         });
+      } else if (!triedGoogle) {
+        triedGoogle = true;
+        try { if (tts != null) tts.shutdown(); } catch (Exception e) {}
+        initTts("com.google.android.tts");
       }
-    });
+    };
+    tts = engine == null ? new TextToSpeech(getContext(), l) : new TextToSpeech(getContext(), l, engine);
+  }
+
+  @Override
+  public void load() {
+    initTts(null);
     MediaService.cb = action -> { JSObject o = new JSObject(); o.put("action", action); notifyListeners("mediaAction", o); };
   }
 
@@ -43,7 +56,7 @@ public class MediaPlugin extends Plugin {
 
   @PluginMethod
   public void speak(PluginCall call) {
-    if (!ready) { call.reject("Mesin suara HP belum siap atau tidak terpasang. Pasang Google Speech Services, atau pakai suara Edge."); return; }
+    if (!ready) { call.reject("Mesin suara HP belum siap (kode " + initStatus + "). Pasang atau aktifkan Google Speech Services di Pengaturan HP > Bahasa > Text-to-speech."); return; }
     String text = call.getString("text", "");
     String lang = call.getString("lang", "");
     String id = call.getString("id", "u");
