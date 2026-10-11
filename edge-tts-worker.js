@@ -1,11 +1,13 @@
 // Cloudflare Worker: jembatan ke suara Microsoft Edge (Read Aloud).
 // Layanan tidak resmi; bisa berubah sewaktu-waktu. Pakai untuk keperluan pribadi.
 const TOKEN = "6A5AA1D4EAFF4E9FB37E23D68491D6F4";
-const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0";
+const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0";
+const VER = "143.0.3650.75";   // samakan dengan edge-tts (rany2) bila nanti 403 lagi
+let skew = 0;   // koreksi selisih jam, dipelajari dari header Date saat ditolak
 const CORS = {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET,OPTIONS", "Access-Control-Allow-Headers": "*"};
 const esc = s => s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&apos;"}[c]));
 async function gec(){
-  let t = Math.floor(Date.now() / 1000) + 11644473600; t -= t % 300;
+  let t = Math.floor(Date.now() / 1000) + skew + 11644473600; t -= t % 300;
   const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode((BigInt(t) * 10000000n).toString() + TOKEN));
   return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
 }
@@ -17,9 +19,12 @@ export default {
     const v = q.get("voice") || "", voice = /^[a-z]{2,3}-[A-Za-z]{2,4}-\w+Neural$/.test(v) ? v : "id-ID-ArdiNeural";
     const rate = Math.max(-50, Math.min(100, parseInt(q.get("rate")) || 0)), id = crypto.randomUUID().replace(/-/g, "");
     try{
-      const resp = await fetch("https://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=" + TOKEN +
-        "&Sec-MS-GEC=" + await gec() + "&Sec-MS-GEC-Version=1-130.0.2849.68&ConnectionId=" + id,
-        {headers: {Upgrade: "websocket", Origin: "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold", "User-Agent": UA, Pragma: "no-cache", "Cache-Control": "no-cache"}});
+      const hdr = {Upgrade: "websocket", Origin: "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold", "User-Agent": UA, "Accept-Language": "en-US,en;q=0.9", Pragma: "no-cache", "Cache-Control": "no-cache",
+        Cookie: "muid=" + [...crypto.getRandomValues(new Uint8Array(16))].map(b => b.toString(16).padStart(2, "0")).join("").toUpperCase() + ";"};
+      const open = async () => fetch("https://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=" + TOKEN +
+        "&Sec-MS-GEC=" + await gec() + "&Sec-MS-GEC-Version=1-" + VER + "&ConnectionId=" + id, {headers: hdr});
+      let resp = await open();
+      if(resp.status === 403 && resp.headers.get("Date")){ skew = Math.round((Date.parse(resp.headers.get("Date")) - Date.now()) / 1000); resp = await open(); }
       const ws = resp.webSocket; if(!ws) return new Response("Gagal terhubung ke Edge TTS (" + resp.status + ")", {status: 502, headers: CORS});
       ws.accept();
       const chunks = [];
@@ -32,7 +37,7 @@ export default {
         });
         ws.addEventListener("error", () => no(new Error("koneksi terputus")));
         ws.addEventListener("close", () => ok());
-        const ts = new Date().toISOString();
+        const ts = new Date().toUTCString().replace(/^(\w+), (\d+) (\w+) (\d+) ([\d:]+) GMT$/, "$1 $3 $2 $4 $5") + " GMT+0000 (Coordinated Universal Time)";
         ws.send("X-Timestamp:" + ts + "\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n" +
           JSON.stringify({context: {synthesis: {audio: {metadataoptions: {sentenceBoundaryEnabled: "false", wordBoundaryEnabled: "false"}, outputFormat: "audio-24khz-48kbitrate-mono-mp3"}}}}));
         ws.send("X-RequestId:" + id + "\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:" + ts + "Z\r\nPath:ssml\r\n\r\n" +
