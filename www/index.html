@@ -1088,12 +1088,12 @@ function loadVoices(){
 function ttsInfo(){
   const n = T.list.length, t = (T.sec && T.sec.dataset.title) || (curEl && curEl.dataset.title) || "Bab";
   $("ttitle").textContent = t;
-  $("tpos").textContent = n ? (T.i + 1) + " / " + n + " kalimat" + (T.on ? "" : " · jeda") : "Siap";
+  $("tpos").textContent = n ? (T.i + 1) + " / " + n + " kalimat" + (T.on ? "" : " · jeda") : "Siap · v2";
   $("tprog").style.transform = "scaleX(" + (n ? Math.min(1, (T.i + 1) / n) : 0).toFixed(3) + ")";
 }
 if(!TTS_OK) $("btts").hidden = true;
 else{
-  $("btts").onclick = () => { $("asbar").classList.remove("on"); $("tts").classList.toggle("on"); ttsInfo(); };
+  $("btts").onclick = () => { $("asbar").classList.remove("on"); const on = $("tts").classList.toggle("on"); const dk = document.querySelector(".dock"); dk.style.display = on ? "block" : ""; if(on) dk.style.zIndex = 50; ttsInfo(); };
   $("tmore").onclick = () => { const s = $("tset"); s.hidden = !s.hidden; $("tmore").setAttribute("aria-expanded", String(!s.hidden)); };
   $("tsleep").onchange = e => { const v = e.target.value; T.sleepCh = v === "bab"; T.sleepAt = +v > 0 ? Date.now() + v * 60000 : 0; if(+v > 0) toast("TTS berhenti dalam " + v + " menit."); };
   $("tplay").onclick = () => T.on ? ttsPause() : ttsPlay();
@@ -1415,7 +1415,7 @@ $("bhome").onclick = () => $("home").classList.contains("on") && chs.length ? hi
 document.addEventListener("visibilitychange", () => { wl = null; if(!document.hidden && (T.on || AS.on)) awake(true); });
 /* Cadangan untuk WebView tanpa :has(): tampilkan dock lewat kelas */
 (() => { const dk = document.querySelector(".dock"), bars = document.querySelectorAll(".ttsbar");
-  const sync = () => { const on = [...bars].some(b => b.classList.contains("on")); dk.classList.toggle("on", on); document.body.classList.toggle("dock-on", on); };
+  const sync = () => { const on = [...bars].some(b => b.classList.contains("on")); dk.classList.toggle("on", on); dk.style.display = on ? "block" : ""; document.body.classList.toggle("dock-on", on); };
   if(window.MutationObserver) bars.forEach(b => new MutationObserver(sync).observe(b, {attributes:true, attributeFilter:["class"]})); sync(); })();
 if(window.ResizeObserver){ const dk = document.querySelector(".dock"); new ResizeObserver(() => document.documentElement.style.setProperty("--dockh", dk.offsetHeight + "px")).observe(dk); }
 /* ===== Tahap E: Edge Android ===== */
