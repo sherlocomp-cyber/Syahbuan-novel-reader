@@ -19,12 +19,21 @@ import org.json.JSONObject;
 
 @CapacitorPlugin(name = "NovelMedia", permissions = { @Permission(strings = { Manifest.permission.POST_NOTIFICATIONS }, alias = "notif") })
 public class MediaPlugin extends Plugin {
+  private static MediaPlugin cur;
   private TextToSpeech tts;
   private boolean ready = false;
   private volatile String lastId = "";
 
   private int initStatus = -999;
   private boolean triedGoogle = false;
+
+  // Dipanggil dari tombol notifikasi: hentikan suara HP seketika tanpa menunggu JavaScript
+  static void haltTts() {
+    MediaPlugin p = cur;
+    if (p != null && p.tts != null) {
+      try { p.tts.stop(); } catch (Exception e) {}
+    }
+  }
 
   private void initTts(String engine) {
     TextToSpeech.OnInitListener l = status -> {
@@ -47,12 +56,15 @@ public class MediaPlugin extends Plugin {
 
   @Override
   public void load() {
+    cur = this;
     initTts(null);
     MediaService.cb = action -> { JSObject o = new JSObject(); o.put("action", action); notifyListeners("mediaAction", o); };
   }
 
   @Override
   protected void handleOnDestroy() {
+    if (cur == this) cur = null;
+    MediaService.cb = null;
     getContext().stopService(new Intent(getContext(), MediaService.class));
     if (tts != null) tts.shutdown();
   }
