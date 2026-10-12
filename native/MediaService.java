@@ -22,6 +22,8 @@ public class MediaService extends Service {
   static final String A_SHOW = "SHOW";
   private MediaSession ms;
   private PowerManager.WakeLock wl;
+  private String lastT = "";
+  private String lastX = "";
 
   @Override public IBinder onBind(Intent i) { return null; }
 
@@ -37,11 +39,11 @@ public class MediaService extends Service {
     ms = new MediaSession(this, "NovelTTS");
     ms.setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS | MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS);
     ms.setCallback(new MediaSession.Callback() {
-      @Override public void onPlay() { send("play"); }
-      @Override public void onPause() { send("pause"); }
-      @Override public void onStop() { send("stop"); }
-      @Override public void onSkipToNext() { send("next"); }
-      @Override public void onSkipToPrevious() { send("prev"); }
+      @Override public void onPlay() { act("play"); }
+      @Override public void onPause() { act("pause"); }
+      @Override public void onStop() { act("stop"); }
+      @Override public void onSkipToNext() { act("next"); }
+      @Override public void onSkipToPrevious() { act("prev"); }
     });
     ms.setActive(true);
     PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
@@ -58,9 +60,18 @@ public class MediaService extends Service {
       boolean p = i == null || i.getBooleanExtra("playing", true);
       render(t == null ? "" : t, x == null ? "" : x, p, true);
     } else if (a.startsWith("ACT_")) {
-      send(a.substring(4).toLowerCase());
+      act(a.substring(4).toLowerCase());
     }
     return START_NOT_STICKY;
+  }
+
+  // Tombol notifikasi / headset: Jeda dan Berhenti langsung menghentikan suara HP tanpa menunggu JavaScript,
+  // lalu aksinya diteruskan ke aplikasi agar statusnya ikut sinkron.
+  private void act(String k) {
+    if (k.equals("pause") || k.equals("stop")) MediaPlugin.haltTts();
+    if (k.equals("pause")) render(lastT, lastX, false, false);
+    else if (k.equals("play")) render(lastT, lastX, true, false);
+    send(k);
   }
 
   private void send(String k) {
@@ -68,6 +79,9 @@ public class MediaService extends Service {
   }
 
   void render(String t, String x, boolean pl, boolean fg) {
+    lastT = t;
+    lastX = x;
+    if (wl != null && !wl.isHeld()) wl.acquire(6 * 60 * 60 * 1000L);
     ms.setMetadata(new MediaMetadata.Builder()
       .putString(MediaMetadata.METADATA_KEY_TITLE, t)
       .putString(MediaMetadata.METADATA_KEY_ARTIST, x).build());
@@ -91,15 +105,15 @@ public class MediaService extends Service {
     b.setSmallIcon(android.R.drawable.ic_media_play)
       .setContentTitle(t).setContentText(x).setContentIntent(open)
       .setOngoing(true).setOnlyAlertOnce(true).setVisibility(Notification.VISIBILITY_PUBLIC)
-      .addAction(act(android.R.drawable.ic_media_previous, "Sebelumnya", "ACT_PREV"))
-      .addAction(act(pl ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play, pl ? "Jeda" : "Putar", pl ? "ACT_PAUSE" : "ACT_PLAY"))
-      .addAction(act(android.R.drawable.ic_media_next, "Berikutnya", "ACT_NEXT"))
-      .addAction(act(android.R.drawable.ic_menu_close_clear_cancel, "Berhenti", "ACT_STOP"))
+      .addAction(actionOf(android.R.drawable.ic_media_previous, "Sebelumnya", "ACT_PREV"))
+      .addAction(actionOf(pl ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play, pl ? "Jeda" : "Putar", pl ? "ACT_PAUSE" : "ACT_PLAY"))
+      .addAction(actionOf(android.R.drawable.ic_media_next, "Berikutnya", "ACT_NEXT"))
+      .addAction(actionOf(android.R.drawable.ic_menu_close_clear_cancel, "Berhenti", "ACT_STOP"))
       .setStyle(new Notification.MediaStyle().setMediaSession(ms.getSessionToken()).setShowActionsInCompactView(0, 1, 2));
     return b.build();
   }
 
-  private Notification.Action act(int icon, String label, String a) {
+  private Notification.Action actionOf(int icon, String label, String a) {
     Intent i = new Intent(this, MediaService.class).setAction(a);
     PendingIntent pi = PendingIntent.getService(this, a.hashCode(), i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     return new Notification.Action.Builder(icon, label, pi).build();
