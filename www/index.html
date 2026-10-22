@@ -316,6 +316,27 @@ summary{min-height:44px;padding:10px 0}
 /* pemisah bab = tiga busur ombak */
 [data-skin=ombak] .ch+.ch{border-top:0;position:relative}
 [data-skin=ombak] .ch+.ch::before{content:"";position:absolute;left:50%;top:1.1em;width:96px;height:16px;margin-left:-48px;background:var(--orn) center/contain no-repeat}
+
+/* ===== Polesan UI/UX ===== */
+::selection{background:color-mix(in srgb,var(--acc) 35%,transparent)}
+html{scrollbar-color:color-mix(in srgb,var(--mute) 55%,transparent) transparent;scrollbar-width:thin}
+input[type=range],input[type=checkbox]{accent-color:var(--acc)}
+output,.big,.lrow small,.tinfo small{font-variant-numeric:tabular-nums}
+article h1{text-wrap:balance}article p{text-wrap:pretty}
+.empty .btn{margin-top:16px}
+/* judul panel tetap terlihat saat panel panjang digulir */
+.panel h3{position:sticky;top:0;z-index:3;margin:-18px -18px 14px;padding:14px 18px;background:var(--cd1,var(--cd))}
+/* geser slider: panel memudar agar teks bacaan terlihat langsung */
+.sheet,.panel{transition:background-color .15s,opacity .15s}
+.sheet:has(input[type=range]:active){background:transparent!important}
+.sheet:has(input[type=range]:active) .panel{opacity:.14}
+/* pengaturan lanjutan */
+.adv{margin:20px 0 4px;border-top:1px solid var(--cb)}
+.adv>summary{display:flex;align-items:center;min-height:48px;font:600 12px var(--ui);color:var(--mt);cursor:pointer;list-style:none}
+.adv>summary::-webkit-details-marker{display:none}
+.adv>summary::after{content:"";width:8px;height:8px;margin-left:auto;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);transition:transform .15s}
+.adv[open]>summary::after{transform:rotate(-135deg)}
+.tools .btn{flex:1 1 auto}
 </style>
 </head>
 <body>
@@ -335,7 +356,7 @@ summary{min-height:44px;padding:10px 0}
 
 <main id="main">
   <article id="doc">
-    <div class="empty"><h2>Belum ada bab</h2><p>Tempel URL bab novel di atas, lalu tekan Baca.<br>Ketuk tengah layar untuk menampilkan atau menyembunyikan bilah atas.</p></div>
+    <div class="empty"><h2>Belum ada bab yang dibuka</h2><p>Mulai dari Beranda: tempel tautan bab atau buka file ebook.</p><button class="btn btn-p" onclick="document.getElementById('bhome').click()">Ke Beranda</button></div>
   </article>
 </main>
 
@@ -374,14 +395,14 @@ summary{min-height:44px;padding:10px 0}
   <div class="seg" id="lseg" role="group" aria-label="Filter library"><button data-v="all" class="on">Semua</button><button data-v="read">Dibaca</button><button data-v="fav">Favorit</button><button data-v="done">Selesai</button></div><input type="hidden" id="lfilter" value="all"></div>
   <div id="llist"></div>
   <div id="impbox" class="card" hidden></div>
-  <div class="tools"><button class="go" id="bexp" style="padding:8px 12px;border-radius:10px;background:var(--acc);color:var(--bg)">Ekspor backup</button>
-  <button id="bbook" style="padding:8px 12px;border:1px solid var(--line);border-radius:10px">Buka ebook</button>
-  <button id="bimp" style="padding:8px 12px;border:1px solid var(--line);border-radius:10px">Impor backup</button><input type="file" id="fimp" accept=".json" hidden></div>
+  <div class="tools"><button class="btn btn-p" id="bexp">Ekspor backup</button>
+  <button class="btn btn-s" id="bbook">Buka ebook</button>
+  <button class="btn btn-s" id="bimp">Impor backup</button><input type="file" id="fimp" accept=".json" hidden></div>
 </div></div>
 <div class="sheet" id="nsheet"><div class="panel"><h3>Catatan &amp; bookmark <button class="ib" data-close aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></h3>
-  <div class="tools"><button id="addbm" style="padding:8px 12px;border-radius:10px;background:var(--acc);color:var(--bg)">Bookmark posisi ini</button>
-  <button id="xmd" style="padding:8px 12px;border:1px solid var(--line);border-radius:10px">Ekspor Markdown</button>
-  <button id="xjs" style="padding:8px 12px;border:1px solid var(--line);border-radius:10px">Ekspor JSON</button></div>
+  <div class="tools"><button class="btn btn-p" id="addbm">Bookmark posisi ini</button>
+  <button class="btn btn-s" id="xmd">Ekspor Markdown</button>
+  <button class="btn btn-s" id="xjs">Ekspor JSON</button></div>
   <div id="nlist"></div>
 </div></div>
 <div class="sheet" id="hsheet"><div class="panel"><h3><span id="htitle">Catatan</span> <button class="ib" data-close aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></h3>
@@ -407,10 +428,11 @@ summary{min-height:44px;padding:10px 0}
   <div class="row"><span>Prefetch (bab)</span><input type="range" id="pre" min="1" max="3"></div>
   <div class="row"><span>Jeda (detik)</span><input type="range" id="delay" min="0" max="5"></div>
   <div class="row"><span>Target harian</span><input type="range" id="goal" min="5" max="120" step="5"></div>
-  <div class="grp">Jaringan dan situs</div><div class="row"><span>Selector Next situs ini</span><input type="text" id="sel" placeholder="mis. a.next-chap"></div>
+  <details class="adv"><summary>Jaringan dan situs (lanjutan)</summary><div class="row"><span>Selector Next situs ini</span><input type="text" id="sel" placeholder="mis. a.next-chap"></div>
   <p class="hint" id="selsite"></p>
   <div class="row stack"><span>Proxy (satu per baris, urut prioritas)</span><textarea id="proxies" rows="4"></textarea></div>
   <div class="row stack"><span>Proxy sendiri (dicoba lebih dulu)</span><input type="text" id="myproxy" placeholder="https://proxy-saya.workers.dev/?url="></div>
+  </details>
   <div class="grp">Lainnya</div><button class="btn btn-s" id="rst">Kembalikan tampilan dan bacaan ke bawaan</button>
   <details><summary>Bantuan: buat proxy sendiri (Cloudflare Worker)</summary>
   <p style="font-size:13px">Buat Worker baru di dash.cloudflare.com, tempel kode ini, lalu isi kolom Proxy sendiri dengan alamat Worker diakhiri <code>/?url=</code>.</p>
