@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#0a1f2c">
-<link rel="manifest" href="/manifest.webmanifest">
-<link rel="icon" type="image/png" href="/icons/icon-192.png">
-<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Novel">
@@ -1479,6 +1479,7 @@ function renderHome(){
   pr.append(f, pc, rd); ps.appendChild(pr);
   const eb = h("section", "card wide"), ea = h("div", "acts"), eo = h("button", "btn btn-p", "Pilih file ebook"); eo.onclick = () => $("fbook").click(); ea.appendChild(eo);
   eb.append(h("h3", "", "Buka file ebook"), h("small", "", "EPUB, TXT, Markdown, HTML, FB2, DOCX, atau PDF. File dibaca di perangkat, tidak diunggah."), ea);
+  const inst = installCard(); if(inst) g.appendChild(inst);
   g.append(hero, td, lb, eb, ps);
   if(!items.length){
     const ob = h("section", "card wide"), ol = h("ol", "steps"); ob.appendChild(h("h3", "", "Cara memulai"));
@@ -1974,7 +1975,24 @@ else showHome();
 </script>
 <script>
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){
-  addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+  addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
+<script>
+/* ===== Pasang dari browser (PWA) ===== */
+window.__ip = null;
+const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); window.__ip = e; if($("home").classList.contains("on")) renderHome(); });
+addEventListener("appinstalled", () => { window.__ip = null; toast("Aplikasi terpasang."); if($("home").classList.contains("on")) renderHome(); });
+function installCard(){
+  if(isStandalone()) return null;
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(!window.__ip && !ios) return null;
+  const c = h("section", "card wide"), row = h("div", "hrow"), tx = h("div");
+  tx.append(h("h3", "", "Pasang di layar utama"), h("small", "", window.__ip ? "Buka seperti aplikasi biasa, tanpa bilah browser, dan tetap bisa dibuka saat offline." : "Di Safari: ketuk Bagikan, lalu Tambah ke Layar Utama."));
+  row.appendChild(tx);
+  if(window.__ip){ const b = h("button", "btn btn-p", "Pasang"); b.onclick = async () => { const p = window.__ip; window.__ip = null; p.prompt(); await p.userChoice.catch(() => {}); renderHome(); }; row.appendChild(b); }
+  c.appendChild(row); return c;
 }
 </script>
 </body>
