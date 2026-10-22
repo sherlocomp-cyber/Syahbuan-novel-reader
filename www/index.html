@@ -1479,7 +1479,7 @@ function renderHome(){
   pr.append(f, pc, rd); ps.appendChild(pr);
   const eb = h("section", "card wide"), ea = h("div", "acts"), eo = h("button", "btn btn-p", "Pilih file ebook"); eo.onclick = () => $("fbook").click(); ea.appendChild(eo);
   eb.append(h("h3", "", "Buka file ebook"), h("small", "", "EPUB, TXT, Markdown, HTML, FB2, DOCX, atau PDF. File dibaca di perangkat, tidak diunggah."), ea);
-  const inst = installCard(); if(inst) g.appendChild(inst);
+  const inst = (typeof installCard === "function") ? installCard() : null; if(inst) g.appendChild(inst);
   g.append(hero, td, lb, eb, ps);
   if(!items.length){
     const ob = h("section", "card wide"), ol = h("ol", "steps"); ob.appendChild(h("h3", "", "Cara memulai"));
@@ -1994,6 +1994,8 @@ function installCard(){
   if(window.__ip){ const b = h("button", "btn btn-p", "Pasang"); b.onclick = async () => { const p = window.__ip; window.__ip = null; p.prompt(); await p.userChoice.catch(() => {}); renderHome(); }; row.appendChild(b); }
   c.appendChild(row); return c;
 }
+/* script ini dimuat setelah beranda pertama dirender, jadi render ulang agar kartu pasang muncul */
+try{ if($("home").classList.contains("on")) renderHome(); }catch(e){}
 </script>
 </body>
 </html>
