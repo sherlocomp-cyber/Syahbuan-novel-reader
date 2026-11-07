@@ -280,7 +280,7 @@ summary{min-height:44px;padding:10px 0}
 [data-skin=ombak] .card-hero{position:relative;overflow:hidden;min-height:170px;color:#efe7d2;
  background:
   radial-gradient(circle 118px at 90% -6px,#f8d27a 0 16px,#f3ac3c 16px 34px,#ef8a2e 34px 52px,#e9662b 52px 70px,#de4a2c 70px 88px,#c93f27 88px 106px,#0000 106.5px),
-  var(--hero) left bottom/100% 46% no-repeat,
+  var(--hero) left bottom/100% 34% no-repeat,
   linear-gradient(180deg,#14596a,#0d3846)}
 [data-skin=ombak] .card-hero>*:not(.btn){position:relative;max-width:66%}
 [data-skin=ombak] .card-hero .btn{position:relative}
@@ -337,6 +337,45 @@ article h1{text-wrap:balance}article p{text-wrap:pretty}
 .adv>summary::after{content:"";width:8px;height:8px;margin-left:auto;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);transition:transform .15s}
 .adv[open]>summary::after{transform:rotate(-135deg)}
 .tools .btn{flex:1 1 auto}
+
+/* ===== Polesan UI/UX tahap 2 ===== */
+/* navigasi beranda: empat tombol selalu terlihat utuh di layar sempit */
+.pnav{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;overflow:visible}
+.pnav .pill{min-width:0;padding:0 4px;font-size:13px;white-space:nowrap}
+@media(min-width:600px){.pnav{display:flex;gap:8px}.pnav .pill{padding:0 16px;font-size:14px}}
+/* kartu hero: keterangan dan grafik tidak lagi menabrak gambar ombak */
+[data-skin=ombak] .card-hero>.hcap,[data-skin=ombak] .card-hero>.spk{max-width:none}
+.card-hero>.hcap{display:block;margin-top:14px}
+.card-hero .spk{margin:6px 0 0}
+[data-skin=ombak] .card-hero .btn{margin-top:20px}
+/* pemutar TTS: sembunyi di beranda kosong; isi beranda tidak tertutup pemutar */
+body.nodoc .dock{display:none!important}
+#home{padding-bottom:calc(32px + var(--dockh,0px) + env(safe-area-inset-bottom,0px))}
+/* layar lebar: toolbar dan pemutar tidak melebar ke tepi layar */
+@media(min-width:768px){
+ .bar{padding-inline:max(6px,calc((100% - 760px)/2))}
+ .dock>.ttsbar{max-width:760px;margin-inline:auto}
+}
+/* pengaturan: tema sebagai kotak pilihan dengan contoh warna, judul grup lebih jelas */
+.row.stack .themes{margin-top:2px}
+.themes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.themes button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:64px;padding:8px 4px;border-radius:14px;font-size:12.5px}
+.themes .sw{width:22px;height:22px;border-radius:50%;border:1px solid color-mix(in srgb,currentColor 35%,transparent)}
+.grp{margin:26px 0 2px;font:700 13px var(--ui);color:var(--lk,var(--mt))}
+/* pengaturan suara: label dan kontrol sejajar di semua baris */
+.tset .trow label{display:grid;grid-template-columns:minmax(96px,34%) minmax(0,1fr);gap:10px;align-items:center}
+.tset .trow label:has(output){grid-template-columns:minmax(96px,34%) minmax(0,1fr) auto}
+.tset .trow output{min-width:44px;text-align:right}
+/* library: judul bab satu baris, bilah progres, tombol utama selebar kartu */
+.lcard{grid-template-columns:64px minmax(0,1fr)}
+.lcard .ch2{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lcard .pbar{height:6px;margin:8px 0 6px}
+.lcard .acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px}
+.lcard .acts button{padding:0 6px}
+.lcard .acts .pri{grid-column:1/-1}
+/* header panel menempel di tepi atas sebenarnya (sebelumnya bergeser sebesar padding dan menimpa isi) */
+.panel h3{top:-18px}
+@media(min-width:768px){.hgrid{align-items:start}}
 </style>
 </head>
 <body>
@@ -375,7 +414,7 @@ article h1{text-wrap:balance}article p{text-wrap:pretty}
     <div class="trow"><label>Kecepatan <input type="range" id="trate" min="5" max="20" aria-label="Kecepatan bicara"> <output id="trv"></output></label></div>
     <div class="trow"><label>Mesin suara <select id="teng"><option value="dev">Perangkat</option><option value="edge">Microsoft Edge (online)</option></select></label></div>
     <div class="trow" id="tedge" hidden><select id="tev" aria-label="Suara Edge"><option value="id-ID-ArdiNeural">Ardi (Indonesia, pria)</option><option value="id-ID-GadisNeural">Gadis (Indonesia, wanita)</option><option value="en-US-AriaNeural">Aria (English US)</option><option value="en-US-GuyNeural">Guy (English US)</option><option value="en-GB-SoniaNeural">Sonia (English UK)</option><option value="ms-MY-YasminNeural">Yasmin (Melayu)</option><option value="ja-JP-NanamiNeural">Nanami (Jepang)</option><option value="zh-CN-XiaoxiaoNeural">Xiaoxiao (Mandarin)</option></select><input type="url" id="teu" placeholder="URL Worker Edge TTS" aria-label="URL Worker Edge TTS"></div>
-    <div class="trow" id="tdev"><select id="tvoice" aria-label="Suara"></select></div>
+    <div class="trow" id="tdev"><label>Suara <select id="tvoice" aria-label="Suara"></select></label></div>
     <small id="tvhint" class="hint" style="margin:0 0 4px"></small>
     <div class="trow"><label>Timer tidur <select id="tsleep" aria-label="Timer tidur"><option value="0">Mati</option><option value="15">15 menit</option><option value="30">30 menit</option><option value="60">60 menit</option><option value="bab">Akhir bab</option></select></label></div>
     <div class="trow"><label>Lanjut otomatis <span class="switch"><input type="checkbox" id="tauto" aria-label="Lanjut otomatis"><i></i></span></label></div>
@@ -390,7 +429,7 @@ article h1{text-wrap:balance}article p{text-wrap:pretty}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="fm" id="fm"></div>
 <div class="sheet" id="lsheet"><div class="panel"><h3>Library <button class="ib" data-close aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></h3>
-  <div class="tools"><input id="lq" type="search" placeholder="Cari judul, situs, tag">
+  <div class="tools"><input id="lq" type="search" placeholder="Cari judul atau tag">
   <select id="lsort"><option value="baca">Terakhir dibaca</option><option value="judul">Judul</option><option value="progres">Progres</option></select>
   <div class="seg" id="lseg" role="group" aria-label="Filter library"><button data-v="all" class="on">Semua</button><button data-v="read">Dibaca</button><button data-v="fav">Favorit</button><button data-v="done">Selesai</button></div><input type="hidden" id="lfilter" value="all"></div>
   <div id="llist"></div>
@@ -413,7 +452,7 @@ article h1{text-wrap:balance}article p{text-wrap:pretty}
 </div></div>
 <div class="sheet" id="sheet"><div class="panel" role="dialog" aria-label="Pengaturan">
   <h3>Pengaturan <button class="ib" id="close" aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></h3>
-  <div class="grp">Tampilan</div><div class="row"><span>Tema</span><div class="themes" id="themes"></div></div>
+  <div class="grp">Tampilan</div><div class="row stack"><span>Tema</span><div class="themes" id="themes"></div></div>
   <div class="row"><span>Ukuran font</span><input type="range" id="fs" min="14" max="30"></div>
   <div class="row"><span>Jenis font</span><select id="ff">
     <option value="Georgia,serif">Serif</option><option value="system-ui,sans-serif">Sans</option>
@@ -465,6 +504,7 @@ const S = Object.assign({}, DEFAULTS, store.get("settings", {}));
 if(!S.v11){ S.theme = "ombak"; S.v11 = 1; }   // v11: tema Ombak jadi tampilan awal
 if(!S.myproxy) S.myproxy = DEFAULTS.myproxy;  // proxy bawaan bila kolom kosong
 const THEMES = ["ombak","buih","otomatis","terang","gelap","sepia","amoled","kertas"];
+const THEME_SW = {ombak:["#0a1f2c","#f3ac3c"], buih:["#e6f0ed","#c0391a"], otomatis:["#fbfaf8","#1c1d1f"], terang:["#fbfaf8","#2f5d62"], gelap:["#1c1d1f","#7fb5b0"], sepia:["#f3e8d2","#8a5a2b"], amoled:["#000000","#7fb5b0"], kertas:["#ececea","#3a4f7a"]};
 
 function applySettings(){
   const r = document.documentElement, s = r.style;
@@ -479,7 +519,9 @@ function buildPanel(){
   $("themes").innerHTML = "";
   THEMES.forEach(t => {
     const b = document.createElement("button");
-    b.textContent = t[0].toUpperCase() + t.slice(1);
+    const sw = document.createElement("i"), c = THEME_SW[t] || ["#fbfaf8", "#2f5d62"];
+    sw.className = "sw"; sw.style.background = "linear-gradient(135deg," + c[0] + " 50%," + c[1] + " 50%)";
+    b.append(sw, t[0].toUpperCase() + t.slice(1));
     b.className = t === S.theme ? "on" : ""; b.setAttribute("aria-pressed", String(t === S.theme));
     b.onclick = () => { S.theme = t; applySettings(); buildPanel(); };
     $("themes").appendChild(b);
@@ -797,10 +839,11 @@ async function renderLib(){
     const c = h("div", "lcard"), cv = h("div", "cover", n.title), mine = info.filter(k => k.url.startsWith(n.key));
     cv.style.background = "linear-gradient(135deg,hsl(" + n.hue + " 45% 38%),hsl(" + (n.hue + 40) + " 50% 20%))";
     if(n.book) cacheGet(n.key).then(m => { if(m && m.cover){ cv.style.background = "url(" + m.cover + ") center/cover"; cv.textContent = ""; cv.setAttribute("role", "img"); cv.setAttribute("aria-label", "Sampul " + n.title); } });
+    const pc = Math.round(n.prog * 100), pb = h("div", "pbar"), pi = h("i"); pi.style.width = pc + "%"; pb.appendChild(pi);
     const inf = h("div"); inf.append(h("h4", "", (n.fav ? "★ " : "") + n.title),
       h("small", "", n.site + (n.tags.length ? " · " + n.tags.join(", ") : "")),
-      h("small", "", (n.chTitle || "") + " · " + (n.book ? "Bab " + n.url.split("/").pop() + "/" + (n.total || "?") + " · " + Math.round(n.prog * 100) + "% buku" : Math.round(n.prog * 100) + "% bab ini")),
-      h("small", "", (n.book ? Math.max(0, mine.length - 1) + " bab ebook" : mine.length + " bab ter-cache") + " · " + fmtSize(mine.reduce((a, k) => a + k.len, 0))));
+      h("small", "ch2", n.chTitle || ""), pb,
+      h("small", "", (n.book ? "Bab " + n.url.split("/").pop() + "/" + (n.total || "?") + " · " + pc + "% buku" : pc + "% bab ini") + " · " + (n.book ? Math.max(0, mine.length - 1) + " bab ebook" : mine.length + " bab ter-cache") + " · " + fmtSize(mine.reduce((a, k) => a + k.len, 0))));
     const a = h("div", "acts"), a2 = h("div", "acts"); a2.hidden = true;
     const mk = (box2, t, fn, cls, armed) => { const b = h("button", cls, t); b.onclick = armed ? () => arm(b, fn) : fn; box2.appendChild(b); };
     mk(a, "Lanjut baca", () => { $("lsheet").classList.remove("on"); start(n.url, n.off); }, "pri");
@@ -1453,7 +1496,7 @@ function renderHome(){
     tx.append(h("h2", "", n.title), h("small", "", n.chTitle || n.site)); rg.innerHTML = ring(Math.round((n.prog || 0) * 100)); row.append(tx, rg);
     const sp = h("div", "spk"); sp.innerHTML = spark(weekSecs());
     const b = h("button", "btn btn-p", "Lanjutkan"); b.onclick = () => resume(n);
-    hero.append(row, sp, h("small", "", "Waktu baca 7 hari terakhir"), b);
+    hero.append(row, h("small", "hcap", "Waktu baca 7 hari terakhir"), sp, b);
   }else hero.append(h("h2", "", "Belum ada bacaan"), h("small", "", "Tempel tautan bab pertama di kartu bawah untuk mulai."));
   const td = h("section", "card"), m = h("div", "metrics"), mt = mins(d.s); td.appendChild(h("h3", "", "Hari ini"));
   [["Waktu baca", mt[0], mt[1]], ["Bab", d.c, "bab"], ["Streak", streak(), "hari"]].forEach(x => {
@@ -1532,6 +1575,9 @@ $("tts").classList.add("on");
 (() => { const dk = document.querySelector(".dock"), bars = document.querySelectorAll(".ttsbar");
   const sync = () => { const on = [...bars].some(b => b.classList.contains("on")); dk.classList.toggle("on", on); dk.style.display = on ? "block" : ""; document.body.classList.toggle("dock-on", on); };
   if(window.MutationObserver) bars.forEach(b => new MutationObserver(sync).observe(b, {attributes:true, attributeFilter:["class"]})); sync(); })();
+/* Beranda kosong (belum ada bab dibuka dan TTS tidak jalan): pemutar disembunyikan agar tidak menutup konten */
+(() => { const dv = () => document.body.classList.toggle("nodoc", !!$("doc").querySelector(":scope > .empty") && !T.on);
+  if(window.MutationObserver) new MutationObserver(dv).observe($("doc"), {childList:true}); dv(); })();
 if(window.ResizeObserver){ const dk = document.querySelector(".dock"); new ResizeObserver(() => document.documentElement.style.setProperty("--dockh", dk.offsetHeight + "px")).observe(dk); }
 /* ===== Tahap E: Edge Android ===== */
 /* Tombol Back menutup panel: tiap panel terbuka = satu entri riwayat; kedalaman dicocokkan di popstate */
